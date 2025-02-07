@@ -1,0 +1,98 @@
+package bibles
+
+import org.w3c.dom.Element
+import java.io.InputStream
+import javax.xml.parsers.DocumentBuilderFactory
+
+// Data classes to represent the Bible structure
+data class Bible(
+    val translation: String,
+    val testaments: List<Testament>
+)
+
+data class Testament(
+    val name: String,
+    val books: List<Book>
+)
+
+data class Book(
+    val number: Int,
+    val chapters: List<Chapter>
+)
+
+data class Chapter(
+    val number: Int,
+    val verses: List<Verse>
+)
+
+data class Verse(
+    val number: Int,
+    val text: String
+)
+
+class BibleXmlParser {
+    public fun parseFromResource(resourcePath: String): Bible {
+        // Get resource as stream
+        val inputStream = javaClass.getResourceAsStream("/" + resourcePath.replace(" ", "") + ".xml")
+            ?: throw IllegalArgumentException("Resource not found: $resourcePath")
+
+        return parseFromStream(inputStream)
+    }
+
+    fun parseFromStream(inputStream: InputStream): Bible {
+        val factory = DocumentBuilderFactory.newInstance()
+        val builder = factory.newDocumentBuilder()
+        val document = builder.parse(inputStream)
+
+        val bibleElement = document.documentElement
+
+        return Bible(
+            translation = bibleElement.getAttribute("translation"),
+            testaments = bibleElement.getElementsByTagName("testament").toElementList().map { parseTestament(it) }
+        )
+    }
+
+    // Rest of parsing methods remain the same
+    private fun parseTestament(element: Element): Testament {
+        return Testament(
+            name = element.getAttribute("name"),
+            books = element.getElementsByTagName("book").toElementList().map { parseBook(it) }
+        )
+    }
+
+    private fun parseBook(element: Element): Book {
+        return Book(
+            number = element.getAttribute("number").toInt(),
+            chapters = element.getElementsByTagName("chapter").toElementList().map { parseChapter(it) }
+        )
+    }
+
+    private fun parseChapter(element: Element): Chapter {
+        return Chapter(
+            number = element.getAttribute("number").toInt(),
+            verses = element.getElementsByTagName("verse").toElementList().map { parseVerse(it) }
+        )
+    }
+
+    private fun parseVerse(element: Element): Verse {
+        return Verse(
+            number = element.getAttribute("number").toInt(),
+            text = element.textContent
+        )
+    }
+
+    private fun org.w3c.dom.NodeList.toElementList(): List<Element> {
+        return (0 until length).map { item(it) as Element }
+    }
+
+    companion object {
+        // Singleton instance if needed
+        private var instance: Bible? = null
+
+        fun getDefaultBible(): Bible {
+            return instance ?: BibleXmlParser().parseFromResource("/EnglishKJBible.xml").also {
+                instance = it
+            }
+        }
+    }
+}
