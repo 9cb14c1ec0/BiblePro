@@ -1,4 +1,4 @@
-name: Package Time Travel App
+name: Package BiblePro App
 
 on:
   workflow_dispatch:
