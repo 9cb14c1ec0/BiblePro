@@ -136,8 +136,10 @@ public fun BiblePane(
             Button(onClick = {OnAddClicked()}) {
                 Text("+")
             }
-            Button(onClick = {OnCloseClicked()}) {
-                Text("-")
+            if(totalUnits > 1) {
+                Button(onClick = { OnCloseClicked() }) {
+                    Text("-")
+                }
             }
         }
     }
