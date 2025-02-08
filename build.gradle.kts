@@ -36,9 +36,14 @@ compose.desktop {
         }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Exe)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Msi)
             packageName = "BiblePro"
             packageVersion = "1.0.1"
+            windows {
+                menu = true
+                menuGroup = "BiblePro"
+                perUserInstall = true
+            }
         }
     }
 }

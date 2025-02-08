@@ -54,11 +54,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
       - name: Build
-        run: ./gradlew packageExe
+        run: ./gradlew packageMsi
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: nightly
           name: nightly
-          files: build/compose/binaries/main/exe/*
+          files: build/compose/binaries/main/msi/*
