@@ -35,7 +35,7 @@ jobs:
         with:
           tag_name: nightly
           name: nightly
-          files: build/compose/binaries/main/*
+          files: build/compose/binaries/main/*/*
   windows:
     name: Package on Windows
     runs-on: windows-latest
