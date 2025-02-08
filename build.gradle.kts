@@ -26,14 +26,20 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
 }
 
+
 compose.desktop {
+
     application {
         mainClass = "MainKt"
+        buildTypes.release.proguard {
+            version.set("7.4.0")
+            isEnabled.set(false)
+        }
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.AppImage)
             packageName = "BiblePro"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.1"
         }
     }
 }

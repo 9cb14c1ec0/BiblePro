@@ -3,11 +3,12 @@ package bibles
 import ComboOption
 
 val bibleList = listOf(
-    ComboOption("English KJV", 0),
-    ComboOption("English YLT", 1),
-    ComboOption("English Tyndale 1537", 2),
-    ComboOption("English Chain Reference", 3),
-    ComboOption("Greek Textus Receptus", 4)
+    ComboOption("English Amplified Bible", 0),
+    ComboOption("English Chain Reference", 1),
+    ComboOption("English KJV", 2),
+    ComboOption("English Tyndale 1537", 3),
+    ComboOption("English YLT", 4),
+    ComboOption("Greek Textus Receptus", 5)
 )
 
 val bookList = listOf(

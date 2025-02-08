@@ -11,131 +11,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.getSelectedText
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import bibles.*
-import java.awt.Toolkit
-import java.awt.datatransfer.DataFlavor
-
-data class ComboOption(
-    override val text: String,
-    val id: Int,
-) : SelectableOption
-
-interface SelectableOption {
-    val text: String
-}
 
 
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun MyComboBox(
-    labelText: String,
-    options: List<ComboOption>,
-    onOptionsChosen: (List<ComboOption>) -> Unit,
-    modifier: Modifier = Modifier,
-    selectedIds: List<Int> = emptyList(),
-    singleSelect: Boolean = false,
-    triggerVar: Int = 0
-) {
-    var expanded by remember { mutableStateOf(false) }
-    // when no options available, I want ComboBox to be disabled
-    val isEnabled by rememberUpdatedState { options.isNotEmpty() }
-    var selectedOptionsList  = remember { mutableStateListOf<Int>()}
-
-    //Initial setup of selected ids
-    selectedIds.forEach{
-        selectedOptionsList.add(it)
-    }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = {
-            if (isEnabled()) {
-                expanded = !expanded
-                if (!expanded) {
-                    onOptionsChosen(options.filter { it.id in selectedOptionsList }.toList())
-                }
-            }
-        },
-        modifier = modifier,
-    ) {
-        val selectedSummary = when (selectedOptionsList.size) {
-            0 -> ""
-            1 -> options.first { it.id == selectedOptionsList.first() }.text
-            else -> selectedOptionsList.joinToString(", ") { options[it].text }
-        }
-        TextField(
-            enabled = isEnabled(),
-            readOnly = true,
-            value = selectedSummary,
-            onValueChange = {},
-            label = { Text(text = labelText) },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            colors = ExposedDropdownMenuDefaults.textFieldColors(),
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = {
-                expanded = false
-                onOptionsChosen(options.filter { it.id in selectedOptionsList }.toList())
-            },
-            modifier = Modifier
-        ) {
-            for (option in options) {
-
-                //use derivedStateOf to evaluate if it is checked
-                var checked = remember {
-                    derivedStateOf{option.id in selectedOptionsList}
-                }.value
-
-                DropdownMenuItem(
-                    onClick = {
-                        if (!checked) {
-                            if(singleSelect)
-                            {
-                                selectedOptionsList.clear()
-                            }
-                            selectedOptionsList.add(option.id)
-                        } else {
-                            selectedOptionsList.remove(option.id)
-                        }
-                    }
-                ){
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = checked,
-                            onCheckedChange = { newCheckedState ->
-                                if (newCheckedState) {
-                                    if(singleSelect)
-                                    {
-                                        selectedOptionsList.clear()
-                                    }
-                                    selectedOptionsList.add(option.id)
-                                } else {
-                                    selectedOptionsList.remove(option.id)
-                                }
-                            },
-                        )
-                        Text(text = option.text)
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun VerseCard(bibles: MutableMap<String, Bible>,
               book: Int,
               chapter: Int,
               verse: Int,
-              OnSelectionChange: (data: String) -> Unit){
+              OnSelectionChange: (index: Int) -> Unit){
 
     var testament = "Old"
     if(book > 39)
@@ -149,22 +37,32 @@ fun VerseCard(bibles: MutableMap<String, Bible>,
            for (bible in bibles)
            {
                var has_verse = false
-               bible.value.testaments.first { it.name == testament }.books.first {
-               it.number == book }.chapters.first {  it.number == chapter}.verses.forEach {
-                   if(it.number == verse)
-                   {
-                       has_verse = true
+               try {
+                   bible.value.testaments.first { it.name == testament }.books.first {
+                       it.number == book }.chapters.first {  it.number == chapter}.verses.forEach {
+                       if(it.number == verse)
+                       {
+                           has_verse = true
+                       }
                    }
                }
+               catch (e: NoSuchElementException)
+               {
+                   has_verse = false
+               }
+
                if(has_verse)
                {
                    val verse_text = bible.value.testaments.first { it.name == testament }.books.first {
                        it.number == book }.chapters.first {  it.number == chapter}.verses.first { it.number == verse }.text
+                   var word_counter = 0
+                   val greek_regex = Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""")
                    val annotated_text = buildAnnotatedString { verse_text.split(" ").forEach { s ->
-                       pushStringAnnotation(s, s)
+                       pushStringAnnotation(word_counter.toString(), s)
                        append(s)
                        append(" ")
                        pop()
+                       word_counter += 1
                    } }
                    SelectionContainer {
                        ClickableText(
@@ -173,8 +71,10 @@ fun VerseCard(bibles: MutableMap<String, Bible>,
                                // offset is the position of the click
                                annotated_text.getStringAnnotations(start = offset, end = offset)
                                    .firstOrNull()?.let { annotation ->
-                                       println(annotation.tag)
-                                       OnSelectionChange(annotation.tag)
+                                       if(greek_regex.containsMatchIn(annotation.item))
+                                       {
+                                           OnSelectionChange(annotation.tag.toInt())
+                                       }
                                    }
                            },
                            modifier = Modifier.background( Color(255-(counter*15), 255-(counter*15), 255-(counter*15)))
@@ -205,9 +105,10 @@ public fun BiblePane(
     var loaded_bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap()) }
     var bible_count by remember { mutableStateOf(0) }
     var chapters by remember { mutableStateOf(emptyList<ComboOption>()) }
-    var concordance_visible by remember { mutableStateOf(false) }
     var lexicon by remember { mutableStateOf(LexiconLoad().loadLexicon())}
     var lexicon_key by remember { mutableStateOf("") }
+    var lexicon_text by remember { mutableStateOf("") }
+    var strongs_mapping by remember { mutableStateOf(StrongsLoad().loadStrongsMapping()) }
 
     Row(modifier = Modifier.padding(5.dp)) {
         MyComboBox(
@@ -253,8 +154,8 @@ public fun BiblePane(
 
                 if(loaded_bibles.containsKey("English KJV"))
                 {
-                    var new_chapters = mutableListOf<ComboOption>()
-                    var book = loaded_bibles["English KJV"]!!.testaments.first{t -> t.name == testament}.books.first {
+                    val new_chapters = mutableListOf<ComboOption>()
+                    val book = loaded_bibles["English KJV"]!!.testaments.first{ t -> t.name == testament}.books.first {
                         b -> b.number == book_id}
                     book.chapters.forEach {c ->
                         new_chapters.apply { add(ComboOption(c.number.toString(), c.number)) }
@@ -287,29 +188,28 @@ public fun BiblePane(
         val ot = loaded_bibles["English KJV"]!!.testaments.first { it.name == testament }
         val book = ot.books.first { it.number == book_id }
         val chapter = book.chapters.first{it.number == chapter_num}
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(count = chapter.verses.size , itemContent = { item ->
-                VerseCard(bibles,  book.number, chapter.number, item + 1) {
-                    val lkey = createLexiconKey(it)
-                    println(lkey)
-                    if (lexicon.entries.containsKey(lkey)) {
-                        concordance_visible = true
-                        lexicon_key = lkey
+        Row {
+            LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, Color.Black)) {
+                items(count = chapter.verses.size , itemContent = { item ->
+                    VerseCard(bibles,  book.number, chapter.number, item + 1) { index ->
+                        var strongs_verse = strongs_mapping.first { it.book == (book.number - 39) && it.chapter == chapter.number &&
+                                it.verse == item + 1}
+                        println(strongs_verse.words)
+                        println(index)
+                        var strongs = strongs_verse.words[index]
+                        strongs = "%04d".format(strongs.toInt())
+                        lexicon_key = lexicon.entries.filter { item -> item.value.strong == "g$strongs" }.keys.single()
+                        lexicon_text = "Strongs: ${lexicon.entries[lexicon_key]!!.definition}"
+                        println(lexicon_text)
                     }
-                }
-            })
-        }
-    }
-
-    if(concordance_visible) {
-        println(lexicon_key)
-        val entry = lexicon.entries[lexicon_key]
-        if (entry != null) {
-            Row {
-                Text(entry.definition, modifier = Modifier.defaultMinSize(100.dp, 40.dp))
+                })
             }
         }
+
     }
+
+    Text(lexicon_text, Modifier.padding(5.dp))
+
 }
 
 @Composable
