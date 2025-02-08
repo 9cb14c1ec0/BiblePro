@@ -29,6 +29,13 @@ jobs:
           path: |
             build/compose/binaries/main/deb
             build/compose/binaries/main/rpm
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: nightly
+          files: build/compose/binaries/main/*
   windows:
     name: Package on Windows
     runs-on: windows-latest
