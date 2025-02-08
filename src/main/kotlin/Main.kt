@@ -6,6 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,7 +107,7 @@ public fun BiblePane(
     var bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap() )}
     var loaded_bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap()) }
     var bible_count by remember { mutableStateOf(0) }
-    var chapters by remember { mutableStateOf(emptyList<ComboOption>()) }
+    var chapters by remember { mutableStateOf(emptyList<String>()) }
     var lexicon by remember { mutableStateOf(LexiconLoad().loadLexicon())}
     var lexicon_key by remember { mutableStateOf("") }
     var lexicon_text by remember { mutableStateOf("") }
@@ -133,50 +136,45 @@ public fun BiblePane(
         )
         if((totalUnits - thisUnit).toInt() == 0)
         {
-            Button(onClick = {OnAddClicked()}) {
-                Text("+")
+            Button(onClick = {OnAddClicked()}, modifier = Modifier.padding(2.dp)) {
+                Icon(Icons.Filled.Add, contentDescription = "Add")
             }
             if(totalUnits > 1) {
-                Button(onClick = { OnCloseClicked() }) {
-                    Text("-")
+                Button(onClick = { OnCloseClicked() }, modifier = Modifier.padding(2.dp)) {
+                    Icon(Icons.Filled.Remove, contentDescription = "Remove")
                 }
             }
         }
     }
     Row(modifier = Modifier.padding(5.dp)) {
-        MyComboBox(
-            "Book", bookList,
-            onOptionsChosen = {
-                book_id = it[0].id
-                var testament = "Old"
-                if(book_id > 39)
-                {
-                    testament = "New"
-                }
-
-                if(loaded_bibles.containsKey("English KJV"))
-                {
-                    val new_chapters = mutableListOf<ComboOption>()
-                    val book = loaded_bibles["English KJV"]!!.testaments.first{ t -> t.name == testament}.books.first {
+        DropdownMenuBox("Book", "", bookList.map { it.text }, {  selected ->
+            println(selected)
+            chapter_num = 1
+            book_id = bookList.first { it.text == selected }.id
+            var testament = "Old"
+            if(book_id > 39)
+            {
+                testament = "New"
+            }
+            if(loaded_bibles.containsKey("English KJV"))
+            {
+                val new_chapters = mutableListOf<ComboOption>()
+                val book = loaded_bibles["English KJV"]!!.testaments.first{ t -> t.name == testament}.books.first {
                         b -> b.number == book_id}
-                    book.chapters.forEach {c ->
-                        new_chapters.apply { add(ComboOption(c.number.toString(), c.number)) }
-                    }
-                    chapters = new_chapters.toList()
+                book.chapters.forEach {c ->
+                    new_chapters.apply { add(ComboOption(c.number.toString(), c.number)) }
                 }
-            },
-            modifier = Modifier.weight(1f),
-            singleSelect = true
-        )
+                chapters = new_chapters.map { it.text }
+            }
 
-        MyComboBox(
-            "Chapter", chapters,
-            onOptionsChosen = {
-                chapter_num = it[0].id
-            },
-            modifier = Modifier.weight(1f),
-            singleSelect = true
-        )
+        }, modifier = Modifier.weight(1f).padding(5.dp))
+
+        DropdownMenuBox("Chapter", "1", chapters, { selected ->
+            if(chapters.contains(selected))
+            {
+                chapter_num = selected.toInt()
+            }
+        }, filterOptions =  false, modifier = Modifier.weight(1f).padding(5.dp))
 
     }
 
