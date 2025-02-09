@@ -8,7 +8,8 @@ val bibleList = listOf(
     ComboOption("English KJV", 2),
     ComboOption("English Tyndale 1537", 3),
     ComboOption("English YLT", 4),
-    ComboOption("Greek Textus Receptus", 5)
+    ComboOption("Greek Textus Receptus", 5),
+    ComboOption("Spanish RV 2020", 6)
 )
 
 val bookList = listOf(
