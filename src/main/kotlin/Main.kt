@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -98,7 +100,7 @@ fun VerseCard(bibles: MutableMap<String, Bible>,
 @Composable
 public fun BiblePane(
     OnAddClicked: () -> Unit,
-    OnCloseClicked: () -> Unit,
+    OnCloseClicked: (unit: Int) -> Unit,
     thisUnit: Int,
     totalUnits: Float,
 ) {
@@ -134,16 +136,41 @@ public fun BiblePane(
             modifier = Modifier.weight(1f),
             singleSelect = false
         )
-        if((totalUnits - thisUnit).toInt() == 0)
+        MinimalDropdownMenu()
+        if(totalUnits > 1)
         {
-            Button(onClick = {OnAddClicked()}, modifier = Modifier.padding(2.dp)) {
-                Icon(Icons.Filled.Add, contentDescription = "Add")
-            }
-            if(totalUnits > 1) {
-                Button(onClick = { OnCloseClicked() }, modifier = Modifier.padding(2.dp)) {
-                    Icon(Icons.Filled.Remove, contentDescription = "Remove")
+            MyDropdownMenu(
+                listOf(
+                    ComboOption("New Bible", -1),
+                    ComboOption("Close Bible", 1)
+                ),
+                Icons.Filled.Book,
+                OnSelectionChange = { i ->
+                    if(i.id == 1 )
+                    {
+                        OnCloseClicked(thisUnit)
+                    }
+                    else if(i.id == -1)
+                    {
+                        OnAddClicked()
+                    }
                 }
-            }
+            )
+        }
+        else if(totalUnits.toInt() == 1)
+        {
+            MyDropdownMenu(
+                listOf(
+                    ComboOption("New Bible", -1)
+                ),
+                Icons.Filled.Book,
+                OnSelectionChange = { i ->
+                    if(i.id == -1)
+                    {
+                        OnAddClicked()
+                    }
+                }
+            )
         }
     }
     Row(modifier = Modifier.padding(5.dp)) {
@@ -192,7 +219,7 @@ public fun BiblePane(
             LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, Color.Black)) {
                 items(count = chapter.verses.size , itemContent = { item ->
                     VerseCard(bibles,  book.number, chapter.number, item + 1) { index ->
-                        var strongs_verse = strongs_mapping.first { it.book == (book.number - 39) && it.chapter == chapter.number &&
+                        val strongs_verse = strongs_mapping.first { it.book == (book.number - 39) && it.chapter == chapter.number &&
                                 it.verse == item + 1}
                         println(strongs_verse.words)
                         println(index)
@@ -217,10 +244,15 @@ public fun BiblePane(
 fun App() {
     MaterialTheme() {
         var m by remember { mutableStateOf(1) }
+
         Row(modifier = Modifier.fillMaxSize(1f)) {
             (1..m).forEach {
-                Column(modifier = Modifier.weight(1f).border(1.dp, Color.Gray)) {
-                    BiblePane({ m += 1 }, { m -= 1 }, it,  m.toFloat())
+                var closed by remember { mutableStateOf(false) }
+                if(!closed)
+                {
+                    Column(modifier = Modifier.border(1.dp, Color.Gray).weight(1F)) {
+                        BiblePane({ m += 1 }, { closed = true}, it,  m.toFloat())
+                    }
                 }
             }
         }
