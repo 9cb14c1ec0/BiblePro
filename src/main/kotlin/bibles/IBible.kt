@@ -30,13 +30,19 @@ data class Verse(
     val text: String
 )
 
+var loaded_bibles: MutableMap<String, Bible> = mutableMapOf()
+
 class BibleXmlParser {
     public fun parseFromResource(resourcePath: String): Bible {
         // Get resource as stream
+        if(loaded_bibles.containsKey(resourcePath))
+        {
+            return loaded_bibles[resourcePath]!!
+        }
         val inputStream = javaClass.getResourceAsStream("/" + resourcePath.replace(" ", "") + ".xml")
             ?: throw IllegalArgumentException("Resource not found: $resourcePath")
-
-        return parseFromStream(inputStream)
+        loaded_bibles[resourcePath] = parseFromStream(inputStream)
+        return loaded_bibles[resourcePath]!!
     }
 
     fun parseFromStream(inputStream: InputStream): Bible {

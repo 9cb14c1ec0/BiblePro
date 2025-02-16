@@ -98,152 +98,11 @@ fun VerseCard(bibles: MutableMap<String, Bible>,
 }
 
 @Composable
-public fun BiblePane(
-    OnAddClicked: () -> Unit,
-    OnCloseClicked: (unit: Int) -> Unit,
-    thisUnit: Int,
-    totalUnits: Float,
-) {
-    var book_id by remember { mutableStateOf(40) }
-    var chapter_num by remember { mutableStateOf(1) }
-    var bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap() )}
-    var loaded_bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap()) }
-    var bible_count by remember { mutableStateOf(0) }
-    var chapters by remember { mutableStateOf(emptyList<String>()) }
-    var lexicon by remember { mutableStateOf(LexiconLoad().loadLexicon())}
-    var lexicon_key by remember { mutableStateOf("") }
-    var lexicon_text by remember { mutableStateOf("") }
-    var strongs_mapping by remember { mutableStateOf(StrongsLoad().loadStrongsMapping()) }
-
-    Row(modifier = Modifier.padding(5.dp)) {
-        MyComboBox(
-            "Bibles", bibleList,
-            onOptionsChosen = {
-                bibles.clear()
-                it.map { option ->
-                    if(!loaded_bibles.containsKey(option.text))
-                    {
-                        loaded_bibles[option.text] = BibleXmlParser().parseFromResource(option.text)
-                    }
-                    if(!loaded_bibles.containsKey("English KJV"))
-                    {
-                        loaded_bibles["English KJV"] = BibleXmlParser().parseFromResource("English KJV")
-                    }
-                    bibles[option.text] = loaded_bibles[option.text]!!
-                }
-                bible_count = bibles.size
-            },
-            modifier = Modifier.weight(1f),
-            singleSelect = false
-        )
-        MinimalDropdownMenu()
-        if(totalUnits > 1)
-        {
-            MyDropdownMenu(
-                listOf(
-                    ComboOption("New Bible", -1),
-                    ComboOption("Close Bible", 1)
-                ),
-                Icons.Filled.Book,
-                OnSelectionChange = { i ->
-                    if(i.id == 1 )
-                    {
-                        OnCloseClicked(thisUnit)
-                    }
-                    else if(i.id == -1)
-                    {
-                        OnAddClicked()
-                    }
-                }
-            )
-        }
-        else if(totalUnits.toInt() == 1)
-        {
-            MyDropdownMenu(
-                listOf(
-                    ComboOption("New Bible", -1)
-                ),
-                Icons.Filled.Book,
-                OnSelectionChange = { i ->
-                    if(i.id == -1)
-                    {
-                        OnAddClicked()
-                    }
-                }
-            )
-        }
-    }
-    Row(modifier = Modifier.padding(5.dp)) {
-        DropdownMenuBox("Book", "", bookList.map { it.text }, {  selected ->
-            println(selected)
-            chapter_num = 1
-            book_id = bookList.first { it.text == selected }.id
-            var testament = "Old"
-            if(book_id > 39)
-            {
-                testament = "New"
-            }
-            if(loaded_bibles.containsKey("English KJV"))
-            {
-                val new_chapters = mutableListOf<ComboOption>()
-                val book = loaded_bibles["English KJV"]!!.testaments.first{ t -> t.name == testament}.books.first {
-                        b -> b.number == book_id}
-                book.chapters.forEach {c ->
-                    new_chapters.apply { add(ComboOption(c.number.toString(), c.number)) }
-                }
-                chapters = new_chapters.map { it.text }
-            }
-
-        }, modifier = Modifier.weight(1f).padding(5.dp))
-
-        DropdownMenuBox("Chapter", "1", chapters, { selected ->
-            if(chapters.contains(selected))
-            {
-                chapter_num = selected.toInt()
-            }
-        }, filterOptions =  false, modifier = Modifier.weight(1f).padding(5.dp))
-
-    }
-
-    if(bible_count > 0)
-    {
-        var testament = "Old"
-        if(book_id > 39)
-        {
-            testament = "New"
-        }
-        val ot = loaded_bibles["English KJV"]!!.testaments.first { it.name == testament }
-        val book = ot.books.first { it.number == book_id }
-        val chapter = book.chapters.first{it.number == chapter_num}
-        Row {
-            LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, Color.Black)) {
-                items(count = chapter.verses.size , itemContent = { item ->
-                    VerseCard(bibles,  book.number, chapter.number, item + 1) { index ->
-                        val strongs_verse = strongs_mapping.first { it.book == (book.number - 39) && it.chapter == chapter.number &&
-                                it.verse == item + 1}
-                        println(strongs_verse.words)
-                        println(index)
-                        var strongs = strongs_verse.words[index]
-                        strongs = "%04d".format(strongs.toInt())
-                        lexicon_key = lexicon.entries.filter { item -> item.value.strong == "g$strongs" }.keys.single()
-                        lexicon_text = "Strongs: ${lexicon.entries[lexicon_key]!!.definition}"
-                        println(lexicon_text)
-                    }
-                })
-            }
-        }
-
-    }
-
-    Text(lexicon_text, Modifier.padding(5.dp))
-
-}
-
-@Composable
 @Preview
 fun App() {
     MaterialTheme() {
         var m by remember { mutableStateOf(1) }
+        var search_count by remember { mutableStateOf(0) }
 
         Row(modifier = Modifier.fillMaxSize(1f)) {
             (1..m).forEach {
@@ -251,7 +110,16 @@ fun App() {
                 if(!closed)
                 {
                     Column(modifier = Modifier.border(1.dp, Color.Gray).weight(1F)) {
-                        BiblePane({ m += 1 }, { closed = true}, it,  m.toFloat())
+                        BiblePane({ m += 1 }, { closed = true}, {search_count += 1}, it,  m.toFloat())
+                    }
+                }
+            }
+            (1 .. search_count).forEach {
+                var closed by remember { mutableStateOf(false) }
+                if(!closed)
+                {
+                    Column(modifier = Modifier.border(1.dp, Color.Gray).weight(1F)) {
+                        SearchPane({ search_count += 1 }, { closed = true}, it,  search_count.toFloat())
                     }
                 }
             }
