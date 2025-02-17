@@ -1,7 +1,10 @@
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -10,12 +13,13 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import bibles.bookList
 import bibles.loaded_bibles
 
-class BibleSearchResult(val reference: String, val text: String)
+class BibleSearchResult(val reference: String, val text: String, val Bible: String, val sortByBook:Int)
 {
     override fun toString(): String {
         return "$reference: $text"
@@ -34,7 +38,8 @@ fun searchAllBibles(search_text: String): List<BibleSearchResult>
                     chapter.verses.forEach { verse ->
                         if(verse.text.lowercase().contains(search_text.lowercase()))
                         {
-                            results.add(BibleSearchResult("${bookList.first { bl -> bl.id == book.number }.text} ${chapter.number}:${verse.number}", verse.text))
+                            results.add(BibleSearchResult("${bookList.first { bl -> bl.id == book.number }.text} ${chapter.number}:${verse.number}",
+                                verse.text, bible.translation, book.number))
                         }
                     }
                 }
@@ -42,8 +47,7 @@ fun searchAllBibles(search_text: String): List<BibleSearchResult>
         }
     }
     // dedupe
-    return results.distinctBy { it.reference }
-    return results
+    return results.distinctBy { it.reference }.sortedBy { it.sortByBook }
 }
 
 @Composable
@@ -90,13 +94,16 @@ fun SearchPane(
     }
     Divider(color = Color.Black, thickness = 1.dp)
     LazyColumn { items(search_results.size) { index ->
-        ClickableText(
-            text = buildAnnotatedString { append(search_results[index].reference + " " + search_results[index].text) },
-            onClick = { offset ->
-                // Open the clicked verse in a new pane
-            }
-        )
-        Divider(color = Color.Black, thickness = 1.dp)
-    } }
+        SelectionContainer(Modifier.padding(10.dp).border(1.dp, Color.Gray, RoundedCornerShape(5.dp))) {
+            ClickableText(
+                text = buildAnnotatedString { append(search_results[index].Bible + ": " +
+                        search_results[index].reference + "\n" + search_results[index].text) },
+                onClick = { offset ->
+                    // Open the clicked verse in a new pane
+                },
+                modifier = Modifier.padding(5.dp)
+            )
+        }
+    }}
 
 }

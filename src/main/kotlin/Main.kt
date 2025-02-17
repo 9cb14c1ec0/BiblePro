@@ -3,6 +3,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
@@ -35,7 +36,7 @@ fun VerseCard(bibles: MutableMap<String, Bible>,
     {
         testament = "New"
     }
-   Row(modifier = Modifier.padding(5.dp)) {
+   Row(modifier = Modifier.padding(5.dp).border(1.dp, Color.Gray, RoundedCornerShape(5.dp))) {
        Text(verse.toString(), modifier = Modifier.padding(10.dp).align(Alignment.CenterVertically))
        Column {
            var counter = 0
@@ -92,9 +93,6 @@ fun VerseCard(bibles: MutableMap<String, Bible>,
            }
        }
    }
-    Divider(color = Color.Black)
-
-
 }
 
 @Composable

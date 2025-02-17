@@ -6,7 +6,7 @@ import javax.xml.parsers.DocumentBuilderFactory
 
 // Data classes to represent the Bible structure
 data class Bible(
-    val translation: String,
+    var translation: String,
     val testaments: List<Testament>
 )
 
@@ -42,6 +42,7 @@ class BibleXmlParser {
         val inputStream = javaClass.getResourceAsStream("/" + resourcePath.replace(" ", "") + ".xml")
             ?: throw IllegalArgumentException("Resource not found: $resourcePath")
         loaded_bibles[resourcePath] = parseFromStream(inputStream)
+        loaded_bibles[resourcePath]!!.translation = resourcePath
         return loaded_bibles[resourcePath]!!
     }
 
