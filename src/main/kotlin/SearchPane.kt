@@ -25,7 +25,6 @@ class BibleSearchResult(val reference: String, val text: String, val Bible: Stri
         return "$reference: $text"
     }
 }
-
 fun searchAllBibles(search_text: String): List<BibleSearchResult>
 {
     val results: MutableList<BibleSearchResult> = mutableListOf()

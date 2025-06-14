@@ -13,7 +13,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import bibles.*
+import nl.marc_apps.tts.TextToSpeechEngine
+import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
+import nl.marc_apps.tts.rememberTextToSpeechOrNull
 
+@OptIn(ExperimentalDesktopTarget::class)
 @Composable
 fun BiblePane(
     OnAddClicked: () -> Unit,
@@ -32,6 +36,7 @@ fun BiblePane(
     var lexicon_key by remember { mutableStateOf("") }
     var lexicon_text by remember { mutableStateOf("") }
     val strongs_mapping by remember { mutableStateOf(StrongsLoad().loadStrongsMapping()) }
+
 
     Row(modifier = Modifier.padding(5.dp)) {
         MyComboBox(
@@ -55,6 +60,7 @@ fun BiblePane(
             singleSelect = false
         )
         MinimalDropdownMenu()
+        ReadingMenu()
         if(totalUnits > 1)
         {
             MyDropdownMenu(
