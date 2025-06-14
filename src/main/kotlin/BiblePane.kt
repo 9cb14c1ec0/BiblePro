@@ -20,6 +20,9 @@ import kotlinx.coroutines.flow.StateFlow
 import nl.marc_apps.tts.TextToSpeechEngine
 import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
 import nl.marc_apps.tts.rememberTextToSpeechOrNull
+import theme.ThemeMode
+import theme.ThemeState
+import theme.ThemeToggle
 import viewmodels.BibleState
 import viewmodels.BibleViewModel
 
@@ -32,7 +35,8 @@ fun BiblePane(
     OnGlobalNotesClicked: () -> Unit = {},
     thisUnit: Int,
     totalUnits: Float,
-    viewModel: BibleViewModel = remember { BibleViewModel() }
+    viewModel: BibleViewModel = remember { BibleViewModel() },
+    themeState: ThemeState? = null
 ) {
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
@@ -52,6 +56,10 @@ fun BiblePane(
         )
         MinimalDropdownMenu()
         ReadingMenu()
+        // Add theme toggle if themeState is provided
+        themeState?.let {
+            ThemeToggle(themeState = it)
+        }
         if(totalUnits > 1) {
             MyDropdownMenu(
                 listOf(
@@ -147,7 +155,7 @@ fun BiblePane(
                 val (book, chapter) = bookAndChapter
 
                 Row {
-                    LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, Color.Black)) {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.5f))) {
                         items(count = chapter.verses.size, itemContent = { item ->
                             VerseCard(
                                 bibles = state.bibles, 

@@ -1,5 +1,6 @@
 package bibles
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -25,12 +26,13 @@ fun ReadingMenu() {
             .padding(16.dp)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
-            Icon(Icons.Filled.Book, contentDescription = "Reading Tracker")
+            Icon(Icons.Filled.Book, contentDescription = "Reading Tracker", tint = MaterialTheme.colors.onSurface)
         }
 
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colors.surface)
         ) {
             // Title
             Text(
@@ -74,7 +76,8 @@ fun ReadingMenu() {
                 Icon(
                     Icons.Filled.Clear,
                     contentDescription = "Reset",
-                    modifier = Modifier.padding(end = 8.dp)
+                    modifier = Modifier.padding(end = 8.dp),
+                    tint = MaterialTheme.colors.onSurface
                 )
                 Text("Reset Reading Data")
             }

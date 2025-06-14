@@ -316,7 +316,8 @@ private fun CompactVerseCard(
                         style = MaterialTheme.typography.body1.copy(
                             fontFamily = FontFamily.Serif,
                             lineHeight = 22.sp,
-                            letterSpacing = 0.sp
+                            letterSpacing = 0.sp,
+                            color = MaterialTheme.colors.onSurface
                         )
                     )
                 }
@@ -562,7 +563,8 @@ private fun ExpandedVerseCard(
                             style = MaterialTheme.typography.body1.copy(
                                 fontFamily = FontFamily.Serif,
                                 lineHeight = 24.sp,
-                                letterSpacing = 0.sp
+                                letterSpacing = 0.sp,
+                                color = MaterialTheme.colors.onSurface
                             )
                         )
                     }

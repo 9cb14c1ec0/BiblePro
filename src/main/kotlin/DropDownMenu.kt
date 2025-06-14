@@ -1,3 +1,4 @@
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
@@ -17,11 +18,12 @@ fun MinimalDropdownMenu() {
             .padding(16.dp)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
-            Icon(Icons.Filled.Language, contentDescription = "More options")
+            Icon(Icons.Filled.Language, contentDescription = "More options", tint = MaterialTheme.colors.onSurface)
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colors.surface)
         ) {
             DropdownMenuItem(
                 content = { Text("English") },
@@ -47,11 +49,12 @@ fun MyDropdownMenu(options: List<ComboOption>, icon: ImageVector, OnSelectionCha
             .padding(16.dp)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
-            Icon(icon, contentDescription = icon.name)
+            Icon(icon, contentDescription = icon.name, tint = MaterialTheme.colors.onSurface)
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MaterialTheme.colors.surface)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(

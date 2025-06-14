@@ -87,10 +87,10 @@ This document contains a detailed list of actionable improvement tasks for the B
 
 ## UI/UX Improvements
 
-[ ] Implement dark mode
-   - [ ] Create a proper theme system
-   - [ ] Add user preference for theme selection
-   - [ ] Ensure proper contrast for all UI elements
+[x] Implement dark mode
+   - [x] Create a proper theme system
+   - [x] Add user preference for theme selection
+   - [x] Ensure proper contrast for all UI elements
 
 [ ] Improve accessibility
    - [ ] Add screen reader support
