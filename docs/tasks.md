@@ -70,10 +70,10 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Implement note categories or tags
    - [ ] Add note export/import functionality
 
-[ ] Enhance reading tracking
-   - [ ] Add reading plans, including a Bible in a year plan
-   - [ ] Implement reading statistics
-   - [ ] Add daily reading reminders
+[x] Enhance reading tracking
+   - [x] Add reading plans, including a Bible in a year plan
+   - [x] Implement reading statistics
+   - [x] Add daily reading reminders
 
 [ ] Add bookmarking functionality
    - [ ] Implement verse bookmarking

@@ -6,9 +6,6 @@ name: Package BiblePro App
 
 on:
   workflow_dispatch:
-  schedule:
-    # Run at midnight UTC every day
-    - cron: '0 0 * * *'
   push:
     tags:
       - 'v*'
