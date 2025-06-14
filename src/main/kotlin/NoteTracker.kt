@@ -14,15 +14,15 @@ import java.util.Properties
 class NoteTracker {
     // Map to store the notes for verses
     private val verseNotes = mutableStateMapOf<String, String>()
-    
+
     // File to store the notes
     private val notesFile = File(System.getProperty("user.home"), ".biblepro_notes.properties")
-    
+
     init {
         // Load notes from file if it exists
         loadNotes()
     }
-    
+
     /**
      * Adds or updates a note for a verse.
      * @param book The book number
@@ -40,7 +40,7 @@ class NoteTracker {
         }
         saveNotes()
     }
-    
+
     /**
      * Gets the note for a verse.
      * @param book The book number
@@ -53,7 +53,7 @@ class NoteTracker {
         println(verseNotes.values.joinToString("\n"))
         return verseNotes[key] ?: ""
     }
-    
+
     /**
      * Checks if a verse has a note.
      * @param book The book number
@@ -65,7 +65,7 @@ class NoteTracker {
         val key = "$book:$chapter:$verse"
         return verseNotes.containsKey(key) && verseNotes[key]?.isNotBlank() == true
     }
-    
+
     /**
      * Removes a note for a verse.
      * @param book The book number
@@ -77,7 +77,15 @@ class NoteTracker {
         verseNotes.remove(key)
         saveNotes()
     }
-    
+
+    /**
+     * Gets all notes.
+     * @return A map of all notes where the key is in the format "book:chapter:verse" and the value is the note text
+     */
+    fun getAllNotes(): Map<String, String> {
+        return verseNotes.toMap()
+    }
+
     /**
      * Loads the notes from a file.
      */
@@ -85,26 +93,26 @@ class NoteTracker {
         if (notesFile.exists()) {
             val properties = Properties()
             FileInputStream(notesFile).use { properties.load(it) }
-            
+
             properties.forEach { (key, value) ->
                 verseNotes[key.toString()] = value.toString()
             }
         }
     }
-    
+
     /**
      * Saves the notes to a file.
      */
     private fun saveNotes() {
         val properties = Properties()
-        
+
         verseNotes.forEach { (key, value) ->
             properties[key] = value
         }
-        
+
         FileOutputStream(notesFile).use { properties.store(it, "Bible Verse Notes") }
     }
-    
+
     companion object {
         // Singleton instance
         val instance = NoteTracker()

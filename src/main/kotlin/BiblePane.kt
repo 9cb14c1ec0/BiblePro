@@ -4,11 +4,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -26,6 +29,7 @@ fun BiblePane(
     OnAddClicked: () -> Unit,
     OnCloseClicked: (unit: Int) -> Unit,
     OnNewSearch: () -> Unit,
+    OnGlobalNotesClicked: () -> Unit = {},
     thisUnit: Int,
     totalUnits: Float,
     viewModel: BibleViewModel = remember { BibleViewModel() }
@@ -53,7 +57,8 @@ fun BiblePane(
                 listOf(
                     ComboOption("New Bible", -1),
                     ComboOption("Close Bible", 1),
-                    ComboOption("New Search", 2)
+                    ComboOption("New Search", 2),
+                    ComboOption("Global Notes", 3)
                 ),
                 Icons.Filled.MoreVert,
                 OnSelectionChange = { i ->
@@ -63,6 +68,8 @@ fun BiblePane(
                         OnAddClicked()
                     } else if(i.id == 2) {
                         OnNewSearch()
+                    } else if(i.id == 3) {
+                        OnGlobalNotesClicked()
                     }
                 }
             )
@@ -70,7 +77,8 @@ fun BiblePane(
             MyDropdownMenu(
                 listOf(
                     ComboOption("New Bible", -1),
-                    ComboOption("New Search", 2)
+                    ComboOption("New Search", 2),
+                    ComboOption("Global Notes", 3)
                 ),
                 Icons.Filled.MoreVert,
                 OnSelectionChange = { i ->
@@ -78,6 +86,8 @@ fun BiblePane(
                         OnAddClicked()
                     } else if(i.id == 2) {
                         OnNewSearch()
+                    } else if(i.id == 3) {
+                        OnGlobalNotesClicked()
                     }
                 }
             )
@@ -110,6 +120,7 @@ fun BiblePane(
             filterOptions = false, 
             modifier = Modifier.weight(1f).padding(5.dp)
         )
+
     }
 
     if (state.bibleCount > 0) {

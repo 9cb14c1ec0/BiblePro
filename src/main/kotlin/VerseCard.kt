@@ -10,6 +10,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Note
+import androidx.compose.material.icons.filled.Highlight
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,13 +45,13 @@ fun VerseCard(
     LaunchedEffect(book, chapter, verse, bibles) {
         viewModel.initialize(book, chapter, verse, bibles)
     }
-    
+
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
-    
+
     // Text-to-speech functionality
     val textToSpeech = rememberTextToSpeechOrNull(TextToSpeechEngine.SystemDefault)
-    
+
     // Dialog for editing notes
     if (state.showNoteDialog) {
         NoteDialog(
@@ -68,6 +70,8 @@ fun VerseCard(
             state = state,
             onMarkAsRead = { viewModel.markAsRead() },
             onShowNoteDialog = { viewModel.showNoteDialog() },
+            onToggleHighlight = { viewModel.toggleHighlighting() },
+            onToggleCrossReference = { viewModel.toggleCrossReferenceInput() },
             onWordSelected = OnSelectionChange
         )
     } else {
@@ -75,8 +79,55 @@ fun VerseCard(
             state = state,
             onMarkAsRead = { viewModel.markAsRead() },
             onShowNoteDialog = { viewModel.showNoteDialog() },
+            onToggleHighlight = { viewModel.toggleHighlighting() },
+            onToggleCrossReference = { viewModel.toggleCrossReferenceInput() },
             onWordSelected = OnSelectionChange
         )
+    }
+
+    // Cross-reference section
+    if (state.showCrossReferenceInput || state.crossReferences.isNotEmpty()) {
+        Column(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            // Display existing cross-references if available
+            if (state.crossReferences.isNotEmpty()) {
+                CrossReferenceSection(
+                    references = state.crossReferences,
+                    onRemoveReference = { reference -> viewModel.removeCrossReference(reference) }
+                )
+            }
+
+            // Add cross-reference UI only when showCrossReferenceInput is true
+            if (state.showCrossReferenceInput) {
+                var newReference by remember { mutableStateOf("") }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = newReference,
+                        onValueChange = { newReference = it },
+                        label = { Text("Add Cross Reference") },
+                        modifier = Modifier.weight(1f).padding(end = 8.dp),
+                        singleLine = true
+                    )
+
+                    Button(
+                        onClick = {
+                            if (newReference.isNotBlank()) {
+                                viewModel.addCrossReference(newReference)
+                                newReference = ""
+                            }
+                        },
+                        enabled = newReference.isNotBlank()
+                    ) {
+                        Text("Add")
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -141,25 +192,32 @@ private fun CompactVerseCard(
     state: viewmodels.VerseState,
     onMarkAsRead: () -> Unit,
     onShowNoteDialog: () -> Unit,
+    onToggleHighlight: () -> Unit = {},
+    onToggleCrossReference: () -> Unit = {},
     onWordSelected: (Int) -> Unit
 ) {
     Row(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .shadow(elevation = 1.dp, shape = RoundedCornerShape(6.dp))
-            .border(0.5.dp, MaterialTheme.colors.primary.copy(alpha = 0.2f), RoundedCornerShape(6.dp))
+            .border(
+                width = if (state.isRead) 2.dp else 0.5.dp,
+                color = if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.5f) else MaterialTheme.colors.primary.copy(alpha = 0.2f),
+                shape = RoundedCornerShape(6.dp)
+            )
             .background(
-                if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.1f) 
-                else MaterialTheme.colors.surface, 
+                MaterialTheme.colors.surface, 
                 RoundedCornerShape(6.dp)
             )
             .clickable { onMarkAsRead() }
     ) {
-        // Smaller verse number
+        // Smaller verse number with read indicator
         Text(
             state.verse.toString(),
-            style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colors.primary,
+            style = MaterialTheme.typography.caption.copy(
+                fontWeight = if (state.isRead) FontWeight.ExtraBold else FontWeight.Bold
+            ),
+            color = if (state.isRead) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(alpha = 0.7f),
             modifier = Modifier
                 .padding(horizontal = 8.dp, vertical = 6.dp)
                 .align(Alignment.CenterVertically)
@@ -174,6 +232,30 @@ private fun CompactVerseCard(
                 .size(18.dp)
                 .align(Alignment.CenterVertically)
                 .clickable(onClick = onShowNoteDialog)
+                .padding(end = 4.dp)
+        )
+
+        // Highlight icon
+        Icon(
+            imageVector = Icons.Default.Highlight,
+            contentDescription = if (state.isHighlighted) "Disable highlighting" else "Enable highlighting",
+            tint = if (state.isHighlighted) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+            modifier = Modifier
+                .size(18.dp)
+                .align(Alignment.CenterVertically)
+                .clickable(onClick = onToggleHighlight)
+                .padding(end = 4.dp)
+        )
+
+        // Cross reference icon
+        Icon(
+            imageVector = Icons.Default.Link,
+            contentDescription = "Cross References",
+            tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+            modifier = Modifier
+                .size(18.dp)
+                .align(Alignment.CenterVertically)
+                .clickable(onClick = onToggleCrossReference)
                 .padding(end = 4.dp)
         )
 
@@ -200,13 +282,14 @@ private fun CompactVerseCard(
             var wordCounter = 0
             val greekRegex = Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""")
             val annotatedText = buildAnnotatedString { 
+                // Split by spaces for word-by-word annotation
                 verseText.split(" ").forEach { word ->
                     pushStringAnnotation(wordCounter.toString(), word)
                     append(word)
                     append(" ")
                     pop()
                     wordCounter += 1
-                } 
+                }
             }
 
             // Compact verse text display
@@ -224,10 +307,16 @@ private fun CompactVerseCard(
                         },
                         modifier = Modifier
                             .padding(vertical = 6.dp, horizontal = 4.dp)
-                            .background(MaterialTheme.colors.background),
+                            .background(
+                                when {
+                                    state.isHighlighted -> MaterialTheme.colors.secondary.copy(alpha = 0.15f)
+                                    else -> MaterialTheme.colors.background
+                                }
+                            ),
                         style = MaterialTheme.typography.body1.copy(
                             fontFamily = FontFamily.Serif,
-                            lineHeight = 22.sp
+                            lineHeight = 22.sp,
+                            letterSpacing = 0.sp
                         )
                     )
                 }
@@ -251,21 +340,80 @@ private fun CompactVerseCard(
     }
 }
 
+/**
+ * Displays a section for cross-references.
+ */
+@Composable
+private fun CrossReferenceSection(
+    references: List<String>,
+    onRemoveReference: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .padding(8.dp)
+            .background(MaterialTheme.colors.surface, RoundedCornerShape(8.dp))
+            .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        Text(
+            "Cross References",
+            style = MaterialTheme.typography.subtitle1,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 4.dp)
+        )
+
+        Divider(modifier = Modifier.padding(vertical = 4.dp))
+
+        references.forEach { reference ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    reference,
+                    style = MaterialTheme.typography.body2,
+                    color = MaterialTheme.colors.primary,
+                    modifier = Modifier.weight(1f)
+                )
+
+                IconButton(
+                    onClick = { onRemoveReference(reference) },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Text(
+                        "×",
+                        style = MaterialTheme.typography.h6,
+                        color = MaterialTheme.colors.error
+                    )
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun ExpandedVerseCard(
     state: viewmodels.VerseState,
     onMarkAsRead: () -> Unit,
     onShowNoteDialog: () -> Unit,
+    onToggleHighlight: () -> Unit = {},
+    onToggleCrossReference: () -> Unit = {},
     onWordSelected: (Int) -> Unit
 ) {
     Row(
         modifier = Modifier
             .padding(8.dp)
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(8.dp))
-            .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+            .border(
+                width = if (state.isRead) 2.dp else 1.dp,
+                color = if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.6f) else MaterialTheme.colors.primary.copy(alpha = 0.3f),
+                shape = RoundedCornerShape(8.dp)
+            )
             .background(
-                if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.1f) 
-                else MaterialTheme.colors.surface, 
+                MaterialTheme.colors.surface, 
                 RoundedCornerShape(8.dp)
             )
             .clickable { onMarkAsRead() }
@@ -275,18 +423,29 @@ private fun ExpandedVerseCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 12.dp)
         ) {
-            // Verse number in a circle
+            // Verse number in a circle with read indicator
             Box(
                 modifier = Modifier
                     .size(28.dp)
-                    .background(MaterialTheme.colors.primary.copy(alpha = 0.1f), CircleShape)
-                    .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.3f), CircleShape),
+                    .background(
+                        if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.15f) 
+                        else MaterialTheme.colors.primary.copy(alpha = 0.1f), 
+                        CircleShape
+                    )
+                    .border(
+                        width = if (state.isRead) 1.25.dp else 1.dp,
+                        color = if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.5f) 
+                               else MaterialTheme.colors.primary.copy(alpha = 0.3f), 
+                        shape = CircleShape
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     state.verse.toString(),
-                    style = MaterialTheme.typography.caption.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colors.primary
+                    style = MaterialTheme.typography.caption.copy(
+                        fontWeight = if (state.isRead) FontWeight.ExtraBold else FontWeight.Bold
+                    ),
+                    color = if (state.isRead) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(alpha = 0.7f)
                 )
             }
 
@@ -299,6 +458,28 @@ private fun ExpandedVerseCard(
                     .size(20.dp)
                     .padding(start = 4.dp)
                     .clickable(onClick = onShowNoteDialog)
+            )
+
+            // Highlight icon
+            Icon(
+                imageVector = Icons.Default.Highlight,
+                contentDescription = if (state.isHighlighted) "Disable highlighting" else "Enable highlighting",
+                tint = if (state.isHighlighted) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(start = 4.dp)
+                    .clickable(onClick = onToggleHighlight)
+            )
+
+            // Cross reference icon
+            Icon(
+                imageVector = Icons.Default.Link,
+                contentDescription = "Cross References",
+                tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+                modifier = Modifier
+                    .size(20.dp)
+                    .padding(start = 4.dp)
+                    .clickable(onClick = onToggleCrossReference)
             )
         }
 
@@ -343,13 +524,14 @@ private fun ExpandedVerseCard(
                     var wordCounter = 0
                     val greekRegex = Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""")
                     val annotatedText = buildAnnotatedString { 
+                        // Split by spaces for word-by-word annotation
                         verseText.split(" ").forEach { word ->
                             pushStringAnnotation(wordCounter.toString(), word)
                             append(word)
                             append(" ")
                             pop()
                             wordCounter += 1
-                        } 
+                        }
                     }
 
                     // Improved verse text display
@@ -367,16 +549,20 @@ private fun ExpandedVerseCard(
                             modifier = Modifier
                                 .padding(bottom = 4.dp)
                                 .background(
-                                    // Subtle pastel colors instead of grayscale
-                                    when (counter % 3) {
-                                        0 -> MaterialTheme.colors.primary.copy(alpha = 0.05f)
-                                        1 -> MaterialTheme.colors.secondary.copy(alpha = 0.05f)
-                                        else -> MaterialTheme.colors.background
+                                    // Apply highlighting if enabled, otherwise use subtle pastel colors
+                                    when {
+                                        state.isHighlighted -> MaterialTheme.colors.secondary.copy(alpha = 0.15f)
+                                        else -> when (counter % 3) {
+                                            0 -> MaterialTheme.colors.primary.copy(alpha = 0.05f)
+                                            1 -> MaterialTheme.colors.secondary.copy(alpha = 0.05f)
+                                            else -> MaterialTheme.colors.background
+                                        }
                                     }
                                 ),
                             style = MaterialTheme.typography.body1.copy(
                                 fontFamily = FontFamily.Serif,
-                                lineHeight = 24.sp
+                                lineHeight = 24.sp,
+                                letterSpacing = 0.sp
                             )
                         )
                     }

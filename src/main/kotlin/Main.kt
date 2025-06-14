@@ -31,6 +31,8 @@ import bibles.bookList
 import nl.marc_apps.tts.TextToSpeechEngine
 import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
 import nl.marc_apps.tts.rememberTextToSpeechOrNull
+import viewmodels.GlobalNotesViewModel
+import GlobalNotesView
 
 
 
@@ -40,6 +42,7 @@ fun App() {
     MaterialTheme() {
         var m by remember { mutableStateOf(1) }
         var search_count by remember { mutableStateOf(0) }
+        var notes_count by remember { mutableStateOf(0) }
 
         Row(modifier = Modifier.fillMaxSize(1f)) {
             (1..m).forEach {
@@ -47,7 +50,14 @@ fun App() {
                 if(!closed)
                 {
                     Column(modifier = Modifier.border(1.dp, Color.Gray).weight(1F)) {
-                        BiblePane({ m += 1 }, { closed = true}, {search_count += 1}, it,  m.toFloat())
+                        BiblePane(
+                            { m += 1 }, 
+                            { closed = true}, 
+                            { search_count += 1 }, 
+                            { notes_count += 1 },
+                            it,  
+                            m.toFloat()
+                        )
                     }
                 }
             }
@@ -57,6 +67,15 @@ fun App() {
                 {
                     Column(modifier = Modifier.border(1.dp, Color.Gray).weight(1F)) {
                         SearchPane({ search_count += 1 }, { closed = true}, it,  search_count.toFloat())
+                    }
+                }
+            }
+            (1 .. notes_count).forEach {
+                var closed by remember { mutableStateOf(false) }
+                if(!closed)
+                {
+                    Column(modifier = Modifier.border(1.dp, Color.Gray).weight(1F)) {
+                        GlobalNotesView({ closed = true}, it, notes_count.toFloat())
                     }
                 }
             }

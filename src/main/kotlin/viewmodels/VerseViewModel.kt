@@ -2,6 +2,7 @@ package viewmodels
 
 import androidx.compose.runtime.mutableStateOf
 import bibles.Bible
+import bibles.CrossReferenceTracker
 import bibles.NoteTracker
 import bibles.ReadingTracker
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,7 +30,8 @@ class VerseViewModel {
         val isRead = ReadingTracker.instance.isRead(book, chapter, verse)
         val hasNote = NoteTracker.instance.hasNote(book, chapter, verse)
         val noteText = NoteTracker.instance.getNote(book, chapter, verse)
-        
+        val crossReferences = CrossReferenceTracker.instance.getCrossReferences(book, chapter, verse)
+
         _state.update { currentState ->
             currentState.copy(
                 book = book,
@@ -39,6 +41,7 @@ class VerseViewModel {
                 isRead = isRead,
                 hasNote = hasNote,
                 noteText = noteText,
+                crossReferences = crossReferences,
                 isCompactMode = bibles.size == 1
             )
         }
@@ -51,9 +54,9 @@ class VerseViewModel {
         val book = _state.value.book
         val chapter = _state.value.chapter
         val verse = _state.value.verse
-        
+
         ReadingTracker.instance.markAsRead(book, chapter, verse)
-        
+
         _state.update { currentState ->
             currentState.copy(
                 isRead = true
@@ -91,9 +94,9 @@ class VerseViewModel {
         val book = _state.value.book
         val chapter = _state.value.chapter
         val verse = _state.value.verse
-        
+
         NoteTracker.instance.setNote(book, chapter, verse, noteText)
-        
+
         _state.update { currentState ->
             currentState.copy(
                 noteText = noteText,
@@ -113,14 +116,14 @@ class VerseViewModel {
         val chapter = _state.value.chapter
         val verse = _state.value.verse
         val bibles = _state.value.bibles
-        
+
         if (!bibles.containsKey(bibleName)) {
             return null
         }
-        
+
         val bible = bibles[bibleName]!!
         val testament = if (book > 39) "New" else "Old"
-        
+
         try {
             return bible.testaments
                 .first { it.name == testament }
@@ -144,6 +147,89 @@ class VerseViewModel {
     fun hasVerse(bibleName: String): Boolean {
         return getVerseText(bibleName) != null
     }
+
+
+    /**
+     * Toggles highlighting for the verse.
+     */
+    fun toggleHighlighting() {
+        _state.update { currentState ->
+            currentState.copy(
+                isHighlighted = !currentState.isHighlighted
+            )
+        }
+    }
+
+    /**
+     * Sets cross-references for the verse.
+     * @param references List of cross-reference strings
+     */
+    fun setCrossReferences(references: List<String>) {
+        val book = _state.value.book
+        val chapter = _state.value.chapter
+        val verse = _state.value.verse
+
+        CrossReferenceTracker.instance.setCrossReferences(book, chapter, verse, references)
+
+        _state.update { currentState ->
+            currentState.copy(
+                crossReferences = references
+            )
+        }
+    }
+
+    /**
+     * Adds a cross-reference to the verse.
+     * @param reference Cross-reference string
+     */
+    fun addCrossReference(reference: String) {
+        val book = _state.value.book
+        val chapter = _state.value.chapter
+        val verse = _state.value.verse
+
+        CrossReferenceTracker.instance.addCrossReference(book, chapter, verse, reference)
+
+        _state.update { currentState ->
+            val updatedReferences = currentState.crossReferences.toMutableList()
+            if (!updatedReferences.contains(reference)) {
+                updatedReferences.add(reference)
+            }
+            currentState.copy(
+                crossReferences = updatedReferences
+            )
+        }
+    }
+
+    /**
+     * Removes a cross-reference from the verse.
+     * @param reference Cross-reference string
+     */
+    fun removeCrossReference(reference: String) {
+        val book = _state.value.book
+        val chapter = _state.value.chapter
+        val verse = _state.value.verse
+
+        CrossReferenceTracker.instance.removeCrossReference(book, chapter, verse, reference)
+
+        _state.update { currentState ->
+            val updatedReferences = currentState.crossReferences.toMutableList()
+            updatedReferences.remove(reference)
+            currentState.copy(
+                crossReferences = updatedReferences
+            )
+        }
+    }
+
+    /**
+     * Toggles the visibility of the cross reference input.
+     */
+    fun toggleCrossReferenceInput() {
+        _state.update { currentState ->
+            currentState.copy(
+                showCrossReferenceInput = !currentState.showCrossReferenceInput
+            )
+        }
+    }
 }
 
 /**
@@ -158,5 +244,8 @@ data class VerseState(
     val hasNote: Boolean = false,
     val noteText: String = "",
     val showNoteDialog: Boolean = false,
-    val isCompactMode: Boolean = true
+    val isCompactMode: Boolean = true,
+    val isHighlighted: Boolean = false,
+    val crossReferences: List<String> = emptyList(),
+    val showCrossReferenceInput: Boolean = false
 )

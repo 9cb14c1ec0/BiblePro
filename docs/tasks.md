@@ -4,10 +4,10 @@ This document contains a detailed list of actionable improvement tasks for the B
 
 ## Architecture Improvements
 
-[ ] Implement a proper MVVM architecture pattern
-   - [ ] Create ViewModel classes for each major component (BiblePane, SearchPane, etc.)
-   - [ ] Move business logic from UI components to ViewModels
-   - [ ] Implement proper state management using StateFlow or LiveData
+[x] Implement a proper MVVM architecture pattern
+   - [x] Create ViewModel classes for each major component (BiblePane, SearchPane, etc.)
+   - [x] Move business logic from UI components to ViewModels
+   - [x] Implement proper state management using StateFlow or LiveData
 
 [ ] Refactor Bible data handling
    - [ ] Create a proper repository pattern for Bible data access
@@ -41,16 +41,6 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Add debounce for search input
    - [ ] Implement click handler for search results
 
-[ ] Improve code documentation
-   - [ ] Add KDoc comments to all public functions and classes
-   - [ ] Document complex algorithms and business logic
-   - [ ] Add README sections for developer onboarding
-
-[ ] Add unit tests
-   - [ ] Add tests for Bible parsing
-   - [ ] Add tests for search functionality
-   - [ ] Add tests for note and reading tracking
-
 ## Performance Improvements
 
 [ ] Optimize Bible loading
@@ -81,7 +71,7 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Add note export/import functionality
 
 [ ] Enhance reading tracking
-   - [ ] Add reading plans
+   - [ ] Add reading plans, including a Bible in a year plan
    - [ ] Implement reading statistics
    - [ ] Add daily reading reminders
 
@@ -107,10 +97,9 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Implement keyboard navigation
    - [ ] Add font size adjustment
 
-[ ] Enhance verse display
-   - [ ] Add paragraph mode for Bible text
-   - [ ] Implement verse highlighting
-   - [ ] Add cross-reference display
+[x] Enhance verse display
+   - [x] Implement verse highlighting
+   - [x] Add cross-reference display
 
 [ ] Improve navigation UI
    - [ ] Add breadcrumb navigation

@@ -32,19 +32,19 @@ class BibleViewModel {
      */
     fun loadBibles(selectedBibles: List<String>) {
         val bibles = mutableMapOf<String, Bible>()
-        
+
         selectedBibles.forEach { bibleName ->
             if (!loadedBibles.containsKey(bibleName)) {
                 loadedBibles[bibleName] = BibleXmlParser().parseFromResource(bibleName)
             }
             bibles[bibleName] = loadedBibles[bibleName]!!
         }
-        
+
         // Ensure KJV is loaded for reference
         if (!loadedBibles.containsKey("English KJV")) {
             loadedBibles["English KJV"] = BibleXmlParser().parseFromResource("English KJV")
         }
-        
+
         _state.update { currentState ->
             currentState.copy(
                 bibles = bibles,
@@ -60,18 +60,18 @@ class BibleViewModel {
     fun selectBook(bookId: Int) {
         val testament = if (bookId > 39) "New" else "Old"
         val chapters = mutableListOf<String>()
-        
+
         if (loadedBibles.containsKey("English KJV")) {
             val book = loadedBibles["English KJV"]!!.testaments
                 .first { it.name == testament }
                 .books
                 .first { it.number == bookId }
-            
+
             book.chapters.forEach { chapter ->
                 chapters.add(chapter.number.toString())
             }
         }
-        
+
         _state.update { currentState ->
             currentState.copy(
                 bookId = bookId,
@@ -104,18 +104,18 @@ class BibleViewModel {
     fun getLexiconEntry(bookId: Int, chapterNum: Int, verseNum: Int, wordIndex: Int): String {
         val lexicon = LexiconLoad().loadLexicon()
         val strongsMapping = StrongsLoad().loadStrongsMapping()
-        
+
         try {
             val strongsVerse = strongsMapping.first { 
                 it.book == (bookId - 39) && 
                 it.chapter == chapterNum && 
                 it.verse == verseNum 
             }
-            
+
             val strongs = strongsVerse.words[wordIndex]
             val formattedStrongs = "%04d".format(strongs.toInt())
             val lexiconKey = lexicon.entries.filter { it.value.strong == "g$formattedStrongs" }.keys.firstOrNull()
-            
+
             return if (lexiconKey != null) {
                 "Strongs: ${lexicon.entries[lexiconKey]!!.definition}"
             } else {
@@ -125,6 +125,7 @@ class BibleViewModel {
             return ""
         }
     }
+
 }
 
 /**
