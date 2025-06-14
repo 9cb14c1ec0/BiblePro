@@ -1,7 +1,17 @@
 name: Package BiblePro App
+# This workflow handles both nightly builds and version releases:
+# - Runs automatically at midnight UTC every day to create nightly releases
+# - Runs when a tag starting with 'v' is pushed to create version releases
+# - Can be manually triggered via workflow_dispatch
 
 on:
   workflow_dispatch:
+  schedule:
+    # Run at midnight UTC every day
+    - cron: '0 0 * * *'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   linux:
@@ -33,9 +43,10 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: nightly
-          name: nightly
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
           files: build/compose/binaries/main/*/*
+          prerelease: ${{ github.ref_type != 'tag' }}
   windows:
     name: Package on Windows
     runs-on: windows-latest
@@ -59,6 +70,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: nightly
-          name: nightly
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
           files: build/compose/binaries/main/msi/*
+          prerelease: ${{ github.ref_type != 'tag' }}
