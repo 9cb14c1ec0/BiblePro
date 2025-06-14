@@ -119,11 +119,6 @@ This document contains a detailed list of actionable improvement tasks for the B
 
 ## Build and Deployment
 
-[ ] Improve build system
-   - [ ] Optimize build time
-   - [ ] Add proper versioning
-   - [ ] Implement CI/CD pipeline
-
 [ ] Enhance packaging
    - [ ] Add proper installers for all platforms
    - [ ] Implement auto-update functionality
@@ -132,16 +127,13 @@ This document contains a detailed list of actionable improvement tasks for the B
 [ ] Improve resource management
    - [ ] Optimize Bible XML files
    - [ ] Implement resource compression
-   - [ ] Add resource versioning
 
 ## Documentation
 
 [ ] Improve user documentation
    - [ ] Create user manual
    - [ ] Add in-app help
-   - [ ] Create tutorial videos
 
 [ ] Enhance developer documentation
    - [ ] Document architecture
-   - [ ] Add API documentation
    - [ ] Create contribution guidelines

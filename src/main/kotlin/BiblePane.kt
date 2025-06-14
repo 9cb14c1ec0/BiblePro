@@ -13,9 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import bibles.*
+import kotlinx.coroutines.flow.StateFlow
 import nl.marc_apps.tts.TextToSpeechEngine
 import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
 import nl.marc_apps.tts.rememberTextToSpeechOrNull
+import viewmodels.BibleState
+import viewmodels.BibleViewModel
 
 @OptIn(ExperimentalDesktopTarget::class)
 @Composable
@@ -25,44 +28,27 @@ fun BiblePane(
     OnNewSearch: () -> Unit,
     thisUnit: Int,
     totalUnits: Float,
+    viewModel: BibleViewModel = remember { BibleViewModel() }
 ) {
-    var book_id by remember { mutableStateOf(40) }
-    var chapter_num by remember { mutableStateOf(1) }
-    val bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap() ) }
-    val loaded_bibles by remember { mutableStateOf(emptyMap<String, Bible>().toMutableMap()) }
-    var bible_count by remember { mutableStateOf(0) }
-    var chapters by remember { mutableStateOf(emptyList<String>()) }
-    val lexicon by remember { mutableStateOf(LexiconLoad().loadLexicon()) }
-    var lexicon_key by remember { mutableStateOf("") }
-    var lexicon_text by remember { mutableStateOf("") }
-    val strongs_mapping by remember { mutableStateOf(StrongsLoad().loadStrongsMapping()) }
+    // Collect state from ViewModel
+    val state by viewModel.state.collectAsState()
 
+    // Local state for lexicon text (could be moved to ViewModel in future iterations)
+    var lexiconText by remember { mutableStateOf("") }
 
     Row(modifier = Modifier.padding(5.dp)) {
         MyComboBox(
             "Bibles", bibleList,
-            onOptionsChosen = {
-                bibles.clear()
-                it.map { option ->
-                    if(!loaded_bibles.containsKey(option.text))
-                    {
-                        loaded_bibles[option.text] = BibleXmlParser().parseFromResource(option.text)
-                    }
-                    if(!loaded_bibles.containsKey("English KJV"))
-                    {
-                        loaded_bibles["English KJV"] = BibleXmlParser().parseFromResource("English KJV")
-                    }
-                    bibles[option.text] = loaded_bibles[option.text]!!
-                }
-                bible_count = bibles.size
+            onOptionsChosen = { selectedOptions ->
+                // Load selected Bibles using ViewModel
+                viewModel.loadBibles(selectedOptions.map { it.text })
             },
             modifier = Modifier.weight(1f),
             singleSelect = false
         )
         MinimalDropdownMenu()
         ReadingMenu()
-        if(totalUnits > 1)
-        {
+        if(totalUnits > 1) {
             MyDropdownMenu(
                 listOf(
                     ComboOption("New Bible", -1),
@@ -71,23 +57,16 @@ fun BiblePane(
                 ),
                 Icons.Filled.MoreVert,
                 OnSelectionChange = { i ->
-                    if(i.id == 1 )
-                    {
+                    if(i.id == 1) {
                         OnCloseClicked(thisUnit)
-                    }
-                    else if(i.id == -1)
-                    {
+                    } else if(i.id == -1) {
                         OnAddClicked()
-                    }
-                    else if(i.id == 2)
-                    {
+                    } else if(i.id == 2) {
                         OnNewSearch()
                     }
                 }
             )
-        }
-        else if(totalUnits.toInt() == 1)
-        {
+        } else if(totalUnits.toInt() == 1) {
             MyDropdownMenu(
                 listOf(
                     ComboOption("New Bible", -1),
@@ -95,80 +74,93 @@ fun BiblePane(
                 ),
                 Icons.Filled.MoreVert,
                 OnSelectionChange = { i ->
-                    if(i.id == -1)
-                    {
+                    if(i.id == -1) {
                         OnAddClicked()
-                    }
-                    else if(i.id == 2)
-                    {
+                    } else if(i.id == 2) {
                         OnNewSearch()
                     }
                 }
             )
         }
     }
+
     Row(modifier = Modifier.padding(5.dp)) {
-        DropdownMenuBox("Book", "", bookList.map { it.text }, { selected ->
-            println(selected)
-            chapter_num = 1
-            book_id = bookList.first { it.text == selected }.id
-            var testament = "Old"
-            if(book_id > 39)
-            {
-                testament = "New"
-            }
-            if(loaded_bibles.containsKey("English KJV"))
-            {
-                val new_chapters = mutableListOf<ComboOption>()
-                val book = loaded_bibles["English KJV"]!!.testaments.first{ t -> t.name == testament}.books.first {
-                        b -> b.number == book_id}
-                book.chapters.forEach {c ->
-                    new_chapters.apply { add(ComboOption(c.number.toString(), c.number)) }
+        DropdownMenuBox(
+            "Book", 
+            bookList.firstOrNull { it.id == state.bookId }?.text ?: "", 
+            bookList.map { it.text }, 
+            { selected ->
+                // Select book using ViewModel
+                val bookId = bookList.first { it.text == selected }.id
+                viewModel.selectBook(bookId)
+            }, 
+            modifier = Modifier.weight(1f).padding(5.dp)
+        )
+
+        DropdownMenuBox(
+            "Chapter", 
+            state.chapterNum.toString(), 
+            state.chapters, 
+            { selected ->
+                if (state.chapters.contains(selected)) {
+                    // Select chapter using ViewModel
+                    viewModel.selectChapter(selected.toInt())
                 }
-                chapters = new_chapters.map { it.text }
-            }
-
-        }, modifier = Modifier.weight(1f).padding(5.dp))
-
-        DropdownMenuBox("Chapter", "1", chapters, { selected ->
-            if(chapters.contains(selected))
-            {
-                chapter_num = selected.toInt()
-            }
-        }, filterOptions =  false, modifier = Modifier.weight(1f).padding(5.dp))
-
+            }, 
+            filterOptions = false, 
+            modifier = Modifier.weight(1f).padding(5.dp)
+        )
     }
 
-    if(bible_count > 0)
-    {
-        var testament = "Old"
-        if(book_id > 39)
-        {
-            testament = "New"
-        }
-        val ot = loaded_bibles["English KJV"]!!.testaments.first { it.name == testament }
-        val book = ot.books.first { it.number == book_id }
-        val chapter = book.chapters.first{it.number == chapter_num}
-        Row {
-            LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, Color.Black)) {
-                items(count = chapter.verses.size , itemContent = { item ->
-                    VerseCard(bibles,  book.number, chapter.number, item + 1) { index ->
-                        val strongs_verse = strongs_mapping.first { it.book == (book.number - 39) && it.chapter == chapter.number &&
-                                it.verse == item + 1}
-                        println(strongs_verse.words)
-                        println(index)
-                        var strongs = strongs_verse.words[index]
-                        strongs = "%04d".format(strongs.toInt())
-                        lexicon_key = lexicon.entries.filter { item -> item.value.strong == "g$strongs" }.keys.single()
-                        lexicon_text = "Strongs: ${lexicon.entries[lexicon_key]!!.definition}"
-                        println(lexicon_text)
+    if (state.bibleCount > 0) {
+        val testament = if (state.bookId > 39) "New" else "Old"
+
+        // Get reference to KJV Bible for structure
+        val kjvBible = state.bibles["English KJV"] ?: state.bibles.values.firstOrNull()
+
+        if (kjvBible != null) {
+            // Extract Bible structure safely before composable functions
+            val bookAndChapter = try {
+                val book = kjvBible.testaments
+                    .first { it.name == testament }
+                    .books
+                    .first { it.number == state.bookId }
+
+                val chapter = book.chapters.first { it.number == state.chapterNum }
+                Pair(book, chapter)
+            } catch (e: NoSuchElementException) {
+                null
+            }
+
+            if (bookAndChapter != null) {
+                val (book, chapter) = bookAndChapter
+
+                Row {
+                    LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, Color.Black)) {
+                        items(count = chapter.verses.size, itemContent = { item ->
+                            VerseCard(
+                                bibles = state.bibles, 
+                                book = state.bookId, 
+                                chapter = state.chapterNum, 
+                                verse = item + 1,
+                                OnSelectionChange = { wordIndex ->
+                                    // Get lexicon entry using ViewModel
+                                    lexiconText = viewModel.getLexiconEntry(
+                                        state.bookId, 
+                                        state.chapterNum, 
+                                        item + 1, 
+                                        wordIndex
+                                    )
+                                }
+                            )
+                        })
                     }
-                })
+                }
+            } else {
+                Text("Error loading Bible content", Modifier.padding(5.dp))
             }
         }
-
     }
 
-    Text(lexicon_text, Modifier.padding(5.dp))
-
+    Text(lexiconText, Modifier.padding(5.dp))
 }
