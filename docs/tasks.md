@@ -73,7 +73,7 @@ This document contains a detailed list of actionable improvement tasks for the B
 [x] Enhance reading tracking
    - [x] Add reading plans, including a Bible in a year plan
    - [x] Implement reading statistics
-   - [x] Add daily reading reminders
+   - [ ] Add daily reading reminders
 
 [ ] Add bookmarking functionality
    - [ ] Implement verse bookmarking
@@ -126,3 +126,4 @@ This document contains a detailed list of actionable improvement tasks for the B
 [ ] Enhance developer documentation
    - [ ] Document architecture
    - [ ] Create contribution guidelines
+   - [x] Add documentation on how to add new Bible translations
