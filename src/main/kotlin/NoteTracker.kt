@@ -1,10 +1,8 @@
 package bibles
 
 import androidx.compose.runtime.mutableStateMapOf
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.Properties
+import storage.DesktopPlatformStorage
+import storage.PlatformStorage
 
 /**
  * A class to track notes for verses.
@@ -15,8 +13,9 @@ class NoteTracker {
     // Map to store the notes for verses
     private val verseNotes = mutableStateMapOf<String, String>()
 
-    // File to store the notes
-    private val notesFile = File(System.getProperty("user.home"), ".biblepro_notes.properties")
+    // Platform storage for notes
+    private val storage: PlatformStorage = DesktopPlatformStorage()
+    private val notesFilename = "notes.properties"
 
     init {
         // Load notes from file if it exists
@@ -86,30 +85,20 @@ class NoteTracker {
     }
 
     /**
-     * Loads the notes from a file.
+     * Loads the notes from storage.
      */
     private fun loadNotes() {
-        if (notesFile.exists()) {
-            val properties = Properties()
-            FileInputStream(notesFile).use { properties.load(it) }
-
-            properties.forEach { (key, value) ->
-                verseNotes[key.toString()] = value.toString()
-            }
+        val properties = storage.loadProperties(notesFilename)
+        properties.forEach { (key, value) ->
+            verseNotes[key] = value
         }
     }
 
     /**
-     * Saves the notes to a file.
+     * Saves the notes to storage.
      */
     private fun saveNotes() {
-        val properties = Properties()
-
-        verseNotes.forEach { (key, value) ->
-            properties[key] = value
-        }
-
-        FileOutputStream(notesFile).use { properties.store(it, "Bible Verse Notes") }
+        storage.saveProperties(notesFilename, verseNotes.toMap())
     }
 
     companion object {

@@ -1,12 +1,10 @@
 package bibles
 
 import androidx.compose.runtime.mutableStateMapOf
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import storage.DesktopPlatformStorage
+import storage.PlatformStorage
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Properties
 
 /**
  * A class to track which verses have been read.
@@ -21,11 +19,10 @@ class ReadingTracker {
     // Map to store reading timestamps
     private val readTimestamps = mutableStateMapOf<String, String>()
 
-    // File to store the reading status
-    private val readingFile = File(System.getProperty("user.home"), ".biblepro_reading.properties")
-
-    // File to store reading statistics
-    private val statsFile = File(System.getProperty("user.home"), ".biblepro_reading_stats.properties")
+    // Platform storage for reading data
+    private val storage: PlatformStorage = DesktopPlatformStorage()
+    private val readingFilename = "reading.properties"
+    private val statsFilename = "reading_stats.properties"
 
     init {
         // Load reading status from file if it exists
@@ -315,36 +312,30 @@ class ReadingTracker {
     }
 
     /**
-     * Loads the reading status from a file.
+     * Loads the reading status from storage.
      */
     private fun loadReadingStatus() {
-        if (readingFile.exists()) {
-            val properties = Properties()
-            FileInputStream(readingFile).use { properties.load(it) }
-
-            properties.forEach { (key, value) ->
-                val keyStr = key.toString()
-                val valueStr = value.toString()
-
-                if (keyStr.contains(":")) {
-                    // Verse reading status
-                    if (valueStr == "true") {
-                        readVerses[keyStr] = true
-                    } else if (valueStr.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
-                        // It's a timestamp
-                        readTimestamps[keyStr] = valueStr
-                        readVerses[keyStr] = true
-                    }
+        val properties = storage.loadProperties(readingFilename)
+        
+        properties.forEach { (key, value) ->
+            if (key.contains(":")) {
+                // Verse reading status
+                if (value == "true") {
+                    readVerses[key] = true
+                } else if (value.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
+                    // It's a timestamp
+                    readTimestamps[key] = value
+                    readVerses[key] = true
                 }
             }
         }
     }
 
     /**
-     * Saves the reading status to a file.
+     * Saves the reading status to storage.
      */
     private fun saveReadingStatus() {
-        val properties = Properties()
+        val properties = mutableMapOf<String, String>()
 
         // Save verse reading status with timestamps
         readVerses.forEach { (key, value) ->
@@ -352,7 +343,7 @@ class ReadingTracker {
             properties[key] = timestamp
         }
 
-        FileOutputStream(readingFile).use { properties.store(it, "Bible Reading Tracker") }
+        storage.saveProperties(readingFilename, properties)
     }
 
     companion object {
