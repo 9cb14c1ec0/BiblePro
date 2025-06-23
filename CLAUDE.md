@@ -28,27 +28,40 @@ BiblePro is a cross-platform Bible application built with Kotlin Multiplatform C
 ./gradlew createDistributable
 ```
 
+### Android Development
+```bash
+# Build Android APK
+./gradlew assembleDebug
+
+# Build Android release APK
+./gradlew assembleRelease
+
+# Copy resources to Android assets (runs automatically during build)
+./gradlew copyResourcesToAndroidAssets
+```
+
 ## Architecture
 
 ### MVVM Pattern
 The application follows an MVVM (Model-View-ViewModel) architecture:
-- **ViewModels**: Located in `src/main/kotlin/viewmodels/` - handle business logic and state management using StateFlow
-- **Views**: Compose UI components in root `src/main/kotlin/` directory
-- **Models**: Bible data structures in `src/main/kotlin/bibles/`
+- **ViewModels**: Located in `src/commonMain/kotlin/viewmodels/` - handle business logic and state management using StateFlow
+- **Views**: Compose UI components in `src/commonMain/kotlin/` directory and `src/desktopMain/kotlin/` for desktop-specific components
+- **Models**: Bible data structures in `src/commonMain/kotlin/bibles/`
 
 ### Key Components
 
 #### Main Application Structure
-- `Main.kt`: Entry point with multi-pane layout system supporting Bible, search, and notes panes
-- `BiblePane.kt`: Main Bible reading interface with translation selection and verse display
-- `SearchPane.kt`: Search functionality across Bible translations
-- `GlobalNotesView.kt`: Notes management system
+- `src/desktopMain/kotlin/Main.kt`: Desktop entry point that launches the application window
+- `src/commonMain/kotlin/App.kt`: Main app component with multi-pane layout system supporting Bible, search, and notes panes
+- `src/commonMain/kotlin/BiblePane.kt`: Main Bible reading interface with translation selection and verse display
+- `src/commonMain/kotlin/SearchPane.kt`: Search functionality across Bible translations
+- `src/commonMain/kotlin/GlobalNotesView.kt`: Notes management system
 
 #### Data Layer
 - `bibles/IBible.kt`: Bible data structures (Bible, Testament, Book, Chapter, Verse)
 - `bibles/BibleList.kt`: Available Bible translations and XML parser
 - `bibles/Lexicon.kt`: Strong's concordance integration
-- Bible XML files stored in `src/main/resources/`
+- Bible XML files stored in `src/commonMain/resources/` and copied to `src/androidMain/assets/` for Android
 
 #### ViewModels
 - `BibleViewModel.kt`: Bible loading, book/chapter selection, verse data
@@ -66,6 +79,7 @@ The application follows an MVVM (Model-View-ViewModel) architecture:
 - **Phonetics**: `phonetics/` directory for phonetic display of text
 - **Reading Tracking**: `ReadingTracker.kt` and `ReadingPlan.kt` for reading progress
 - **Cross References**: `CrossReferenceTracker.kt` for Bible cross-references
+- **Storage Abstraction**: `storage/PlatformStorage.kt` interface with platform-specific implementations for file operations
 
 ### Multi-Pane System
 The application uses a dynamic pane system where users can open multiple Bible panes, search panes, and notes panes simultaneously. Each pane type has its own state management and can be closed independently.
@@ -75,6 +89,18 @@ Bible translations are stored as XML files in resources and parsed on-demand. Th
 
 ### State Management
 Uses Kotlin StateFlow for reactive state management in ViewModels. UI components collect state changes and recompose accordingly. Local state is managed with Compose's remember and mutableStateOf for transient UI state.
+
+### Kotlin Multiplatform Structure
+The application is structured as a Kotlin Multiplatform project:
+- **commonMain**: Shared code for all platforms including UI, business logic, and data models
+- **desktopMain**: Desktop-specific implementations (Main.kt entry point, file storage)
+- **androidMain**: Android-specific implementations (MainActivity.kt, Android storage, manifest)
+
+### Resource Loading
+Resources (Bible XML files, lexicon data) are loaded differently per platform:
+- **Desktop**: Uses `ResourceLoader` to load from JAR resources
+- **Android**: Resources are copied from `commonMain/resources` to `androidMain/assets` during build
+- Both platforms use the same `ResourceLoader` interface for consistent resource access
 
 ## Important Patterns
 
@@ -86,3 +112,16 @@ Use `L.current.l("key")` for all user-facing strings. New language support requi
 
 ### Testing
 Test files are located in `src/test/kotlin/` but no specific test framework is currently configured in build.gradle.kts.
+
+### Platform-Specific Development
+When adding platform-specific functionality:
+- Use the `storage/PlatformStorage.kt` interface for file operations
+- Implement platform-specific versions in `desktopMain` and `androidMain`
+- Use `PlatformStorageFactory` to get the appropriate implementation
+- Keep shared logic in `commonMain` whenever possible
+
+### Resource Management
+- Bible translations and lexicon data are loaded lazily and cached
+- Use `BibleXmlParser().parseFromResource()` to load Bible translations
+- Bible caching is handled in `BibleViewModel` to avoid re-parsing
+- All user-facing strings must use the localization system with `L.current.l("key")`

@@ -105,6 +105,86 @@ fun MinimalDropdownMenu() {
                 content = { Text("Tiếng Việt") },
                 onClick = { L.current.language = "vietnamese" }
             )
+            DropdownMenuItem(
+                content = { Text("Bahasa Indonesia") },
+                onClick = { L.current.language = "indonesian" }
+            )
+            DropdownMenuItem(
+                content = { Text("Kiswahili") },
+                onClick = { L.current.language = "swahili" }
+            )
+            DropdownMenuItem(
+                content = { Text("Nederlands") },
+                onClick = { L.current.language = "dutch" }
+            )
+            DropdownMenuItem(
+                content = { Text("Polski") },
+                onClick = { L.current.language = "polish" }
+            )
+            DropdownMenuItem(
+                content = { Text("Română") },
+                onClick = { L.current.language = "romanian" }
+            )
+            DropdownMenuItem(
+                content = { Text("Ελληνικά") },
+                onClick = { L.current.language = "greek" }
+            )
+            DropdownMenuItem(
+                content = { Text("עברית") },
+                onClick = { L.current.language = "hebrew" }
+            )
+            DropdownMenuItem(
+                content = { Text("Tagalog") },
+                onClick = { L.current.language = "tagalog" }
+            )
+            DropdownMenuItem(
+                content = { Text("አማርኛ") },
+                onClick = { L.current.language = "amharic" }
+            )
+            DropdownMenuItem(
+                content = { Text("ไทย") },
+                onClick = { L.current.language = "thai" }
+            )
+            DropdownMenuItem(
+                content = { Text("Cebuano") },
+                onClick = { L.current.language = "cebuano" }
+            )
+            DropdownMenuItem(
+                content = { Text("Hausa") },
+                onClick = { L.current.language = "hausa" }
+            )
+            DropdownMenuItem(
+                content = { Text("Yorùbá") },
+                onClick = { L.current.language = "yoruba" }
+            )
+            DropdownMenuItem(
+                content = { Text("Norsk") },
+                onClick = { L.current.language = "norwegian" }
+            )
+            DropdownMenuItem(
+                content = { Text("Svenska") },
+                onClick = { L.current.language = "swedish" }
+            )
+            DropdownMenuItem(
+                content = { Text("Dansk") },
+                onClick = { L.current.language = "danish" }
+            )
+            DropdownMenuItem(
+                content = { Text("Čeština") },
+                onClick = { L.current.language = "czech" }
+            )
+            DropdownMenuItem(
+                content = { Text("Magyar") },
+                onClick = { L.current.language = "hungarian" }
+            )
+            DropdownMenuItem(
+                content = { Text("Hrvatski") },
+                onClick = { L.current.language = "croatian" }
+            )
+            DropdownMenuItem(
+                content = { Text("Српски") },
+                onClick = { L.current.language = "serbian" }
+            )
         }
     }
 }

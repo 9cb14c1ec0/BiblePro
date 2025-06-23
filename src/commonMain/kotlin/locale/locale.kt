@@ -26,6 +26,26 @@ import locale.tamil_strings
 import locale.urdu_strings
 import locale.vietnamese_strings
 import locale.korean_strings
+import locale.indonesian_strings
+import locale.swahili_strings
+import locale.dutch_strings
+import locale.polish_strings
+import locale.romanian_strings
+import locale.greek_strings
+import locale.hebrew_strings
+import locale.tagalog_strings
+import locale.amharic_strings
+import locale.thai_strings
+import locale.cebuano_strings
+import locale.hausa_strings
+import locale.yoruba_strings
+import locale.norwegian_strings
+import locale.swedish_strings
+import locale.danish_strings
+import locale.czech_strings
+import locale.hungarian_strings
+import locale.croatian_strings
+import locale.serbian_strings
 
 val local_map: Map<String, Map<String, String>> = mapOf(
     "spanish" to spanish_strings,
@@ -46,7 +66,27 @@ val local_map: Map<String, Map<String, String>> = mapOf(
     "tamil" to tamil_strings,
     "urdu" to urdu_strings,
     "vietnamese" to vietnamese_strings,
-    "korean" to korean_strings
+    "korean" to korean_strings,
+    "indonesian" to indonesian_strings,
+    "swahili" to swahili_strings,
+    "dutch" to dutch_strings,
+    "polish" to polish_strings,
+    "romanian" to romanian_strings,
+    "greek" to greek_strings,
+    "hebrew" to hebrew_strings,
+    "tagalog" to tagalog_strings,
+    "amharic" to amharic_strings,
+    "thai" to thai_strings,
+    "cebuano" to cebuano_strings,
+    "hausa" to hausa_strings,
+    "yoruba" to yoruba_strings,
+    "norwegian" to norwegian_strings,
+    "swedish" to swedish_strings,
+    "danish" to danish_strings,
+    "czech" to czech_strings,
+    "hungarian" to hungarian_strings,
+    "croatian" to croatian_strings,
+    "serbian" to serbian_strings
 );
 
 @Immutable

@@ -1,6 +1,34 @@
+# BiblePro
+
 Cross-platform Bible app written in Kotlin Multiplatform Compose
 
+> **Disclaimer**: All localization and Bible translation selection in this application has been done by AI and may not be perfect. Please verify translations and language support for accuracy in your specific use case.
+
 MSI, DEB, and RPM packages are available on the [releases page](releases).
+
+## Platforms Supported
+- **Desktop**: Windows, macOS, Linux (via Compose Multiplatform)
+- **Android**: APK builds available
+
+## Quick Start
+
+### Desktop
+```bash
+# Build and run
+./gradlew run
+
+# Create distribution package
+./gradlew packageDistributionForCurrentOS
+```
+
+### Android
+```bash
+# Build debug APK
+./gradlew assembleDebug
+
+# Build release APK
+./gradlew assembleRelease
+```
 
 ## Features
 
@@ -10,14 +38,13 @@ MSI, DEB, and RPM packages are available on the [releases page](releases).
 - Verse highlighting and display customization
 - Support for multiple Bible panes for comparative study
 
-### Translations Included
+### Bible Translations
 - King James Version (KJV)
 - Young's Literal Translation (YLT)
 - Amplified Bible
 - Spanish Reina Valera 2020
 - Greek Textus Receptus
-- English Chain Reference
-- English Tyndale 1537
+- And 25+ additional translations in multiple languages
 
 ### Strong's Concordance Integration
 - Built-in Strong's concordance for original language study
@@ -55,6 +82,32 @@ MSI, DEB, and RPM packages are available on the [releases page](releases).
 - All data stored locally on your device
 - No internet connection required, even for downloading Bibles
 
+### Localization
+- Multi-language support with easy language switching
+- Bible book names translated for supported languages
+- **Supported Languages**: English, Arabic, Bengali, Chinese, French, German, Hindi, Italian, Japanese, Javanese, Korean, Marathi, Portuguese, Russian, Spanish, Tamil, Telugu, Turkish, Urdu, Vietnamese, Indonesian, Swahili, Dutch, Polish, Romanian, Greek, Hebrew, Tagalog, Amharic, Thai, Cebuano, Hausa, Yoruba, Norwegian, Swedish, Danish, Czech, Hungarian, Croatian, Serbian
+- Extensible localization system for adding new languages
+
+## Technical Details
+
+### Architecture
+- **MVVM Pattern**: Clean separation of concerns with ViewModels handling business logic
+- **Kotlin Multiplatform**: Shared codebase between desktop and Android
+- **Compose Multiplatform**: Modern declarative UI framework
+- **StateFlow**: Reactive state management
+- **Multi-pane System**: Dynamic pane management for comparative study
+
+### Data Storage
+- Bible translations stored as XML files in application resources
+- Lazy loading and caching for optimal performance
+- Strong's concordance data integrated for original language study
+- Platform-specific storage implementations for notes and settings
+
+### Development
+- Built with Gradle and Kotlin Multiplatform
+- Structured for easy addition of new Bible translations
+- Comprehensive localization system for international support
+- See `CLAUDE.md` for detailed development guidelines
 
 Screenshot:
 ![img.png](img.png)

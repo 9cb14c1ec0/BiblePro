@@ -9,9 +9,9 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [x] Move business logic from UI components to ViewModels
    - [x] Implement proper state management using StateFlow or LiveData
 
-[ ] Refactor Bible data handling
-   - [ ] Create a proper repository pattern for Bible data access
-   - [ ] Implement caching strategy for Bible data
+[x] Refactor Bible data handling
+   - [x] Create a proper repository pattern for Bible data access
+   - [x] Implement caching strategy for Bible data (BibleViewModel caches loaded Bibles)
    - [ ] Add dependency injection for Bible data sources
 
 [ ] Improve error handling
@@ -31,8 +31,8 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Remove duplicate code between compact and expanded modes
    - [ ] Improve state management
 
-[ ] Refactor BiblePane.kt
-   - [ ] Extract Bible loading logic to a separate class
+[x] Refactor BiblePane.kt
+   - [x] Extract Bible loading logic to a separate class (BibleViewModel)
    - [ ] Improve error handling for Bible loading
    - [ ] Optimize performance for large Bible books
 
@@ -43,9 +43,9 @@ This document contains a detailed list of actionable improvement tasks for the B
 
 ## Performance Improvements
 
-[ ] Optimize Bible loading
-   - [ ] Implement lazy loading for Bible data
-   - [ ] Add background loading for Bible translations
+[x] Optimize Bible loading
+   - [x] Implement lazy loading for Bible data (on-demand parsing)
+   - [x] Add background loading for Bible translations (BibleViewModel)
    - [ ] Optimize XML parsing
 
 [ ] Improve search performance
@@ -80,6 +80,12 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Add bookmark categories
    - [ ] Add bookmark export/import
 
+[x] Add phonetic support
+   - [x] Implement phonetic display system
+   - [x] Add phonetic language selection
+   - [x] Create phonetic toggle functionality
+   - [ ] Add more phonetic language support
+
 [ ] Improve Strong's concordance integration
    - [ ] Add more lexicon data
    - [ ] Improve word highlighting
@@ -108,14 +114,57 @@ This document contains a detailed list of actionable improvement tasks for the B
 
 ## Build and Deployment
 
+[x] Add Android platform support
+   - [x] Implement Android-specific components (MainActivity, Android storage)
+   - [x] Set up resource copying from commonMain to androidMain assets
+   - [x] Configure Android build in gradle
+
 [ ] Enhance packaging
-   - [ ] Add proper installers for all platforms
+   - [x] Add proper installers for all platforms (DMG, MSI, DEB, RPM)
    - [ ] Implement auto-update functionality
    - [ ] Add splash screen
 
-[ ] Improve resource management
+[x] Improve resource management
+   - [x] Implement platform-specific resource loading
+   - [x] Set up automatic resource copying for Android
    - [ ] Optimize Bible XML files
    - [ ] Implement resource compression
+
+## Testing and Quality Assurance
+
+[ ] Implement testing framework
+   - [ ] Add unit testing framework to build.gradle.kts
+   - [ ] Create unit tests for ViewModels
+   - [ ] Add integration tests for Bible data loading
+   - [ ] Implement UI tests for Compose components
+
+[ ] Add code quality tools
+   - [ ] Set up linting with ktlint or detekt
+   - [ ] Add code coverage reporting
+   - [ ] Implement static analysis tools
+
+## Platform-Specific Improvements
+
+[ ] Android optimizations
+   - [ ] Implement Android-specific UI adaptations
+   - [ ] Add Android back button handling
+   - [ ] Optimize for different screen sizes
+   - [ ] Add Android share functionality
+
+[ ] Desktop enhancements
+   - [ ] Add desktop-specific keyboard shortcuts
+   - [ ] Implement native file dialogs
+   - [ ] Add system tray integration
+   - [ ] Improve window management
+
+## Localization Enhancements
+
+[x] Implement comprehensive localization system
+   - [x] Create localization framework with L.current.l() function
+   - [x] Add support for 20+ languages
+   - [x] Implement Bible book name translations
+   - [ ] Add RTL language support
+   - [ ] Implement dynamic language switching
 
 ## Documentation
 
@@ -123,7 +172,9 @@ This document contains a detailed list of actionable improvement tasks for the B
    - [ ] Create user manual
    - [ ] Add in-app help
 
-[ ] Enhance developer documentation
-   - [ ] Document architecture
+[x] Enhance developer documentation
+   - [x] Document architecture in CLAUDE.md
+   - [x] Document Kotlin Multiplatform structure
    - [ ] Create contribution guidelines
    - [x] Add documentation on how to add new Bible translations
+   - [x] Document localization implementation

@@ -12,7 +12,27 @@ val bibleList = listOf(
     ComboOption("English YLT", 4),
     ComboOption("Greek Textus Receptus", 5),
     ComboOption("Spanish RV 2020", 6),
-    ComboOption("Torreys Topical Textbook", 7)
+    ComboOption("Torreys Topical Textbook", 7),
+    ComboOption("Amharic Bible", 8),
+    ComboOption("Cebuano Bible", 9),
+    ComboOption("Croatian Bible", 10),
+    ComboOption("Czech Bible", 11),
+    ComboOption("Danish Bible", 12),
+    ComboOption("Dutch Bible", 13),
+    ComboOption("Greek Bible", 14),
+    ComboOption("Hausa 2013 Bible", 15),
+    ComboOption("Hebrew Bible", 16),
+    ComboOption("Hungarian Bible", 17),
+    ComboOption("Indonesian TL Bible", 18),
+    ComboOption("Norwegian Bible", 19),
+    ComboOption("Polish Bible", 20),
+    ComboOption("Romanian Bible", 21),
+    ComboOption("Serbian Bible", 22),
+    ComboOption("Swahili Bible", 23),
+    ComboOption("Swedish Bible", 24),
+    ComboOption("Tagalog Bible", 25),
+    ComboOption("Thai Bible", 26),
+    ComboOption("Yoruba Bible", 27)
 )
 
 /**
