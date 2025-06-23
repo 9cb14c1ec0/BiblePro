@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import java.time.format.DateTimeFormatter
+import locale.L
 
 /**
  * A dropdown menu that displays what sections of the Bible have been read.
@@ -40,7 +41,7 @@ fun ReadingMenu() {
             .padding(16.dp)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
-            Icon(Icons.Filled.Book, contentDescription = "Reading Tracker", tint = MaterialTheme.colors.onSurface)
+            Icon(Icons.Filled.Book, contentDescription = L.current.l("Reading Tracker"), tint = MaterialTheme.colors.onSurface)
         }
 
         DropdownMenu(
@@ -53,7 +54,7 @@ fun ReadingMenu() {
         ) {
             // Title
             Text(
-                "Reading Tracker",
+                L.current.l("Reading Tracker"),
                 style = MaterialTheme.typography.h6,
                 modifier = Modifier.padding(8.dp)
             )
@@ -62,7 +63,7 @@ fun ReadingMenu() {
 
             // Reading Statistics
             Text(
-                "Statistics",
+                L.current.l("Statistics"),
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 4.dp)
@@ -75,12 +76,12 @@ fun ReadingMenu() {
             ) {
                 StatisticItem(
                     value = statistics.totalChaptersRead.toString(),
-                    label = "Chapters Read",
+                    label = L.current.l("Chapters Read"),
                     modifier = Modifier.weight(1f)
                 )
                 StatisticItem(
                     value = statistics.totalBooksCompleted.toString(),
-                    label = "Books Completed",
+                    label = L.current.l("Books Completed"),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -92,12 +93,12 @@ fun ReadingMenu() {
             ) {
                 StatisticItem(
                     value = statistics.currentStreak.toString(),
-                    label = "Day Streak",
+                    label = L.current.l("Day Streak"),
                     modifier = Modifier.weight(1f)
                 )
                 StatisticItem(
                     value = String.format("%.1f", statistics.averageChaptersPerDay),
-                    label = "Chapters/Day",
+                    label = L.current.l("Chapters/Day"),
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -106,7 +107,7 @@ fun ReadingMenu() {
 
             // Reading Plans
             Text(
-                "Reading Plans",
+                L.current.l("Reading Plans"),
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
@@ -114,7 +115,7 @@ fun ReadingMenu() {
 
             if (activePlans.isEmpty()) {
                 Text(
-                    "No active reading plans",
+                    L.current.l("No active reading plans"),
                     style = MaterialTheme.typography.body2,
                     modifier = Modifier.padding(8.dp)
                 )
@@ -127,10 +128,10 @@ fun ReadingMenu() {
                 ) {
                     Icon(
                         Icons.Filled.Add,
-                        contentDescription = "Add Reading Plan",
+                        contentDescription = L.current.l("Add Reading Plan"),
                         modifier = Modifier.padding(end = 4.dp)
                     )
-                    Text("Start Reading Plan")
+                    Text(L.current.l("Start Reading Plan"))
                 }
             } else {
                 // Display active reading plans
@@ -147,10 +148,10 @@ fun ReadingMenu() {
                     ) {
                         Icon(
                             Icons.Filled.Add,
-                            contentDescription = "Add Reading Plan",
+                            contentDescription = L.current.l("Add Reading Plan"),
                             modifier = Modifier.padding(end = 4.dp)
                         )
-                        Text("Add Another Plan")
+                        Text(L.current.l("Add Another Plan"))
                     }
                 }
             }
@@ -159,7 +160,7 @@ fun ReadingMenu() {
 
             // Read Sections
             Text(
-                "Read Sections",
+                L.current.l("Read Sections"),
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
@@ -168,7 +169,7 @@ fun ReadingMenu() {
             // If no sections have been read, show a message
             if (readSections.isEmpty()) {
                 Text(
-                    "No sections read yet",
+                    L.current.l("No sections read yet"),
                     style = MaterialTheme.typography.body2,
                     modifier = Modifier.padding(8.dp)
                 )
@@ -195,7 +196,7 @@ fun ReadingMenu() {
 
             // Reminders
             Text(
-                "Daily Reminders",
+                L.current.l("Daily Reminders"),
                 style = MaterialTheme.typography.subtitle1,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
@@ -209,10 +210,10 @@ fun ReadingMenu() {
             ) {
                 Icon(
                     Icons.Filled.Notifications,
-                    contentDescription = "Set Reminders",
+                    contentDescription = L.current.l("Set Reminders"),
                     modifier = Modifier.padding(end = 4.dp)
                 )
-                Text("Set Reading Reminders")
+                Text(L.current.l("Set Reading Reminders"))
             }
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
@@ -231,11 +232,11 @@ fun ReadingMenu() {
             ) {
                 Icon(
                     Icons.Filled.Clear,
-                    contentDescription = "Reset",
+                    contentDescription = L.current.l("Reset"),
                     modifier = Modifier.padding(end = 8.dp),
                     tint = MaterialTheme.colors.onSurface
                 )
-                Text("Reset Reading Data")
+                Text(L.current.l("Reset Reading Data"))
             }
         }
     }
@@ -328,12 +329,12 @@ private fun ReadingPlanItem(plan: ReadingPlan) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "${plan.getProgress()}% Complete",
+                text = "${plan.getProgress()}${L.current.l("% Complete")}",
                 style = MaterialTheme.typography.caption
             )
 
             Text(
-                text = "${plan.getDaysRemaining()} days left",
+                text = "${plan.getDaysRemaining()} ${L.current.l("days left")}",
                 style = MaterialTheme.typography.caption
             )
         }
@@ -341,15 +342,15 @@ private fun ReadingPlanItem(plan: ReadingPlan) {
         // Current reading
         val currentReading = plan.getCurrentReading()
         if (currentReading != null) {
-            val bookName = bookList.find { it.id == currentReading.bookId }?.text ?: "Book ${currentReading.bookId}"
+            val bookName = bookList.find { it.id == currentReading.bookId }?.text ?: "${L.current.l("Book")} ${currentReading.bookId}"
             val chapterRange = if (currentReading.chapterStart == currentReading.chapterEnd) {
-                "Chapter ${currentReading.chapterStart}"
+                "${L.current.l("Chapter")} ${currentReading.chapterStart}"
             } else {
-                "Chapters ${currentReading.chapterStart}-${currentReading.chapterEnd}"
+                "${L.current.l("Chapters")} ${currentReading.chapterStart}-${currentReading.chapterEnd}"
             }
 
             Text(
-                text = "Today's Reading: $bookName $chapterRange",
+                text = "${L.current.l("Today's Reading:")} $bookName $chapterRange",
                 style = MaterialTheme.typography.body2,
                 fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(top = 8.dp)
@@ -374,20 +375,20 @@ private fun ReadingPlanDialog(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    "Select Reading Plan",
+                    L.current.l("Select Reading Plan"),
                     style = MaterialTheme.typography.h6,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 ReadingPlanOption(
-                    title = "Bible in a Year",
-                    description = "Read through the entire Bible in 365 days",
+                    title = L.current.l("Bible in a Year"),
+                    description = L.current.l("Read through the entire Bible in 365 days"),
                     onClick = { onSelectPlan(ReadingPlanType.BIBLE_IN_A_YEAR) }
                 )
 
                 ReadingPlanOption(
-                    title = "New Testament in 90 Days",
-                    description = "Read through the New Testament in 90 days",
+                    title = L.current.l("New Testament in 90 Days"),
+                    description = L.current.l("Read through the New Testament in 90 days"),
                     onClick = { onSelectPlan(ReadingPlanType.NEW_TESTAMENT_IN_90_DAYS) }
                 )
 
@@ -397,7 +398,7 @@ private fun ReadingPlanDialog(
                         .align(Alignment.End)
                         .padding(top = 16.dp)
                 ) {
-                    Text("Cancel")
+                    Text(L.current.l("Cancel"))
                 }
             }
         }
@@ -454,13 +455,13 @@ private fun RemindersDialog(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    "Reading Reminders",
+                    L.current.l("Reading Reminders"),
                     style = MaterialTheme.typography.h6,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Text(
-                    "Reminder functionality will be implemented in a future update. This would allow you to set daily reminders to keep up with your reading plans.",
+                    L.current.l("Reminder functionality will be implemented in a future update. This would allow you to set daily reminders to keep up with your reading plans."),
                     style = MaterialTheme.typography.body1,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
@@ -471,7 +472,7 @@ private fun RemindersDialog(
                         .align(Alignment.End)
                         .padding(top = 16.dp)
                 ) {
-                    Text("Close")
+                    Text(L.current.l("Close"))
                 }
             }
         }

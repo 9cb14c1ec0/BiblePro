@@ -45,7 +45,7 @@ class GlobalNotesViewModel {
     private fun loadNotes() {
         val noteTracker = NoteTracker.instance
         val notes = mutableListOf<NoteItem>()
-        
+
         // Extract all notes from NoteTracker
         // The keys in NoteTracker are in the format "book:chapter:verse"
         noteTracker.getAllNotes().forEach { (key, text) ->
@@ -61,11 +61,14 @@ class GlobalNotesViewModel {
                 }
             }
         }
-        
+
+        // Sort notes by reference (book, chapter, verse)
+        val sortedNotes = notes.sortedWith(compareBy({ it.book }, { it.chapter }, { it.verse }))
+
         _state.update { currentState ->
             currentState.copy(
-                allNotes = notes,
-                filteredNotes = notes
+                allNotes = sortedNotes,
+                filteredNotes = sortedNotes
             )
         }
     }
@@ -82,19 +85,19 @@ class GlobalNotesViewModel {
                 if (note.text.contains(newText, ignoreCase = true)) {
                     return@filter true
                 }
-                
+
                 // Search in book name
                 val bookName = bookList.find { it.id == note.book }?.text ?: ""
                 if (bookName.contains(newText, ignoreCase = true)) {
                     return@filter true
                 }
-                
+
                 // Search in reference (e.g., "John 3:16")
                 val reference = "$bookName ${note.chapter}:${note.verse}"
                 reference.contains(newText, ignoreCase = true)
             }
         }
-        
+
         _state.update { currentState ->
             currentState.copy(
                 searchText = newText,

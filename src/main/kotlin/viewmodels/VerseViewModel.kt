@@ -9,6 +9,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.buildAnnotatedString
+import phonetics.PhoneticLanguage
+import phonetics.PhoneticGenerator
+import phonetics.PhoneticGeneratorFactory
 
 /**
  * ViewModel for the Verse card component.
@@ -32,6 +37,29 @@ class VerseViewModel {
         val noteText = NoteTracker.instance.getNote(book, chapter, verse)
         val crossReferences = CrossReferenceTracker.instance.getCrossReferences(book, chapter, verse)
 
+        // Pre-process verse texts for all Bibles
+        val verseTexts = mutableMapOf<String, String>()
+        val processedTexts = mutableMapOf<String, AnnotatedString>()
+
+        for (bibleName in bibles.keys) {
+            val verseText = getVerseTextEfficient(bibleName, book, chapter, verse, bibles)
+            if (verseText != null) {
+                verseTexts[bibleName] = verseText
+                processedTexts[bibleName] = processVerseText(verseText)
+            }
+        }
+
+        // Get current phonetics settings
+        val showPhonetics = _state.value.showPhonetics
+        val phoneticLanguage = _state.value.phoneticLanguage
+
+        // Generate phonetics if needed
+        val phoneticTexts = if (showPhonetics) {
+            generatePhoneticTexts(verseTexts, phoneticLanguage)
+        } else {
+            emptyMap()
+        }
+
         _state.update { currentState ->
             currentState.copy(
                 book = book,
@@ -42,8 +70,56 @@ class VerseViewModel {
                 hasNote = hasNote,
                 noteText = noteText,
                 crossReferences = crossReferences,
-                isCompactMode = bibles.size == 1
+                isCompactMode = bibles.size == 1,
+                verseTexts = verseTexts,
+                processedVerseTexts = processedTexts,
+                phoneticTexts = phoneticTexts
             )
+        }
+    }
+
+    /**
+     * More efficient verse text lookup that avoids repeated traversals
+     */
+    private fun getVerseTextEfficient(bibleName: String, book: Int, chapter: Int, verse: Int, bibles: Map<String, Bible>): String? {
+        if (!bibles.containsKey(bibleName)) {
+            return null
+        }
+
+        val bible = bibles[bibleName]!!
+        val testament = if (book > 39) "New" else "Old"
+
+        try {
+            return bible.testaments
+                .firstOrNull { it.name == testament }
+                ?.books
+                ?.firstOrNull { it.number == book }
+                ?.chapters
+                ?.firstOrNull { it.number == chapter }
+                ?.verses
+                ?.firstOrNull { it.number == verse }
+                ?.text
+        } catch (e: NoSuchElementException) {
+            return null
+        }
+    }
+
+    /**
+     * Pre-processes verse text into an AnnotatedString for efficient rendering
+     */
+    private fun processVerseText(text: String): AnnotatedString {
+        val greekRegex = Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""")
+        var wordCounter = 0
+
+        return buildAnnotatedString { 
+            // Split by spaces for word-by-word annotation
+            text.split(" ").forEach { word ->
+                pushStringAnnotation(wordCounter.toString(), word)
+                append(word)
+                append(" ")
+                pop()
+                wordCounter += 1
+            }
         }
     }
 
@@ -230,6 +306,73 @@ class VerseViewModel {
             )
         }
     }
+
+    /**
+     * Toggles the display of phonetics.
+     */
+    fun togglePhonetics() {
+        _state.update { currentState ->
+            val newShowPhonetics = !currentState.showPhonetics
+
+            // If enabling phonetics but no language is selected, default to Spanish
+            val newLanguage = if (newShowPhonetics && currentState.phoneticLanguage == PhoneticLanguage.NONE) {
+                PhoneticLanguage.SPANISH
+            } else {
+                currentState.phoneticLanguage
+            }
+
+            // Generate phonetics if needed
+            val newPhoneticTexts = if (newShowPhonetics) {
+                generatePhoneticTexts(currentState.verseTexts, newLanguage)
+            } else {
+                currentState.phoneticTexts
+            }
+
+            currentState.copy(
+                showPhonetics = newShowPhonetics,
+                phoneticLanguage = newLanguage,
+                phoneticTexts = newPhoneticTexts
+            )
+        }
+    }
+
+    /**
+     * Sets the language for phonetics.
+     * @param language The language to set
+     */
+    fun setPhoneticLanguage(language: PhoneticLanguage) {
+        _state.update { currentState ->
+            // Generate phonetics for the new language
+            val newPhoneticTexts = generatePhoneticTexts(currentState.verseTexts, language)
+
+            currentState.copy(
+                phoneticLanguage = language,
+                phoneticTexts = newPhoneticTexts
+            )
+        }
+    }
+
+    /**
+     * Generates phonetic texts for all verses in the specified language.
+     * @param verseTexts Map of Bible name to verse text
+     * @param language The language to generate phonetics for
+     * @return Map of Bible name to phonetic text
+     */
+    private fun generatePhoneticTexts(verseTexts: Map<String, String>, language: PhoneticLanguage): Map<String, String> {
+        val generator = PhoneticGeneratorFactory.getGenerator(language) ?: return emptyMap()
+
+        val phoneticTexts = mutableMapOf<String, String>()
+
+        for ((bibleName, verseText) in verseTexts) {
+            // Only generate phonetics for Spanish Bible if language is Spanish
+            if (language == PhoneticLanguage.SPANISH && bibleName == "Spanish RV 2020") {
+                phoneticTexts[bibleName] = generator.generatePhonetics(verseText)
+            }
+            // Add more language conditions here in the future
+        }
+
+        return phoneticTexts
+    }
 }
 
 /**
@@ -247,5 +390,12 @@ data class VerseState(
     val isCompactMode: Boolean = true,
     val isHighlighted: Boolean = false,
     val crossReferences: List<String> = emptyList(),
-    val showCrossReferenceInput: Boolean = false
+    val showCrossReferenceInput: Boolean = false,
+    // Pre-processed verse text to improve rendering performance
+    val processedVerseTexts: Map<String, AnnotatedString> = emptyMap(),
+    val verseTexts: Map<String, String> = emptyMap(),
+    // Phonetics settings
+    val showPhonetics: Boolean = false,
+    val phoneticLanguage: PhoneticLanguage = PhoneticLanguage.NONE,
+    val phoneticTexts: Map<String, String> = emptyMap()
 )

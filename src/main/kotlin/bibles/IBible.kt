@@ -3,6 +3,7 @@ package bibles
 import org.w3c.dom.Element
 import java.io.InputStream
 import javax.xml.parsers.DocumentBuilderFactory
+import phonetics.PhoneticLanguage
 
 // Data classes to represent the Bible structure
 data class Bible(
@@ -27,7 +28,8 @@ data class Chapter(
 
 data class Verse(
     val number: Int,
-    val text: String
+    val text: String,
+    var phonetics: Map<PhoneticLanguage, String> = emptyMap()
 )
 
 var loaded_bibles: MutableMap<String, Bible> = mutableMapOf()

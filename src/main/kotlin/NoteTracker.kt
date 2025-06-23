@@ -50,7 +50,6 @@ class NoteTracker {
      */
     fun getNote(book: Int, chapter: Int, verse: Int): String {
         val key = "$book:$chapter:$verse"
-        println(verseNotes.values.joinToString("\n"))
         return verseNotes[key] ?: ""
     }
 

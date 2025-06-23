@@ -26,12 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import bibles.*
-import nl.marc_apps.tts.TextToSpeechEngine
-import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
-import nl.marc_apps.tts.rememberTextToSpeechOrNull
+import phonetics.PhoneticLanguage
+import phonetics.PhoneticGenerator
+import phonetics.PhoneticGeneratorFactory
 import viewmodels.VerseViewModel
 
-@OptIn(ExperimentalDesktopTarget::class)
 @Composable
 fun VerseCard(
     bibles: Map<String, Bible>,
@@ -39,18 +38,26 @@ fun VerseCard(
     chapter: Int,
     verse: Int,
     OnSelectionChange: (index: Int) -> Unit,
-    viewModel: VerseViewModel = remember { VerseViewModel() }
+    viewModel: VerseViewModel = remember { VerseViewModel() },
+    showPhonetics: Boolean = false,
+    phoneticLanguage: PhoneticLanguage = PhoneticLanguage.NONE
 ) {
     // Initialize ViewModel with verse information
-    LaunchedEffect(book, chapter, verse, bibles) {
+    LaunchedEffect(book, chapter, verse, bibles, showPhonetics, phoneticLanguage) {
         viewModel.initialize(book, chapter, verse, bibles)
+
+        // Update phonetics settings in ViewModel
+        if (showPhonetics != viewModel.state.value.showPhonetics) {
+            viewModel.togglePhonetics()
+        }
+
+        if (phoneticLanguage != viewModel.state.value.phoneticLanguage) {
+            viewModel.setPhoneticLanguage(phoneticLanguage)
+        }
     }
 
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
-
-    // Text-to-speech functionality
-    val textToSpeech = rememberTextToSpeechOrNull(TextToSpeechEngine.SystemDefault)
 
     // Dialog for editing notes
     if (state.showNoteDialog) {
@@ -64,25 +71,34 @@ fun VerseCard(
         )
     }
 
+    // Use remember with derivedStateOf to minimize recompositions
+    val isCompactMode = remember(state.isCompactMode) { state.isCompactMode }
+
     // Check if only one Bible is selected for compact mode
-    if (state.isCompactMode) {
-        CompactVerseCard(
-            state = state,
-            onMarkAsRead = { viewModel.markAsRead() },
-            onShowNoteDialog = { viewModel.showNoteDialog() },
-            onToggleHighlight = { viewModel.toggleHighlighting() },
-            onToggleCrossReference = { viewModel.toggleCrossReferenceInput() },
-            onWordSelected = OnSelectionChange
-        )
+    if (isCompactMode) {
+        // Use key to help with recomposition optimization
+        key(state.book, state.chapter, state.verse) {
+            CompactVerseCard(
+                state = state,
+                onMarkAsRead = { viewModel.markAsRead() },
+                onShowNoteDialog = { viewModel.showNoteDialog() },
+                onToggleHighlight = { viewModel.toggleHighlighting() },
+                onToggleCrossReference = { viewModel.toggleCrossReferenceInput() },
+                onWordSelected = OnSelectionChange
+            )
+        }
     } else {
-        ExpandedVerseCard(
-            state = state,
-            onMarkAsRead = { viewModel.markAsRead() },
-            onShowNoteDialog = { viewModel.showNoteDialog() },
-            onToggleHighlight = { viewModel.toggleHighlighting() },
-            onToggleCrossReference = { viewModel.toggleCrossReferenceInput() },
-            onWordSelected = OnSelectionChange
-        )
+        // Use key to help with recomposition optimization
+        key(state.book, state.chapter, state.verse) {
+            ExpandedVerseCard(
+                state = state,
+                onMarkAsRead = { viewModel.markAsRead() },
+                onShowNoteDialog = { viewModel.showNoteDialog() },
+                onToggleHighlight = { viewModel.toggleHighlighting() },
+                onToggleCrossReference = { viewModel.toggleCrossReferenceInput() },
+                onWordSelected = OnSelectionChange
+            )
+        }
     }
 
     // Cross-reference section
@@ -196,6 +212,8 @@ private fun CompactVerseCard(
     onToggleCrossReference: () -> Unit = {},
     onWordSelected: (Int) -> Unit
 ) {
+    // Remember the regex to avoid recreating it on each recomposition
+    val greekRegex = remember { Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""") }
     Row(
         modifier = Modifier
             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -261,36 +279,9 @@ private fun CompactVerseCard(
 
         // Verse content
         val bibleName = state.bibles.keys.firstOrNull() ?: ""
-        val verseText = state.bibles[bibleName]?.let { bible ->
-            val testament = if (state.book > 39) "New" else "Old"
-            try {
-                bible.testaments
-                    .first { it.name == testament }
-                    .books
-                    .first { it.number == state.book }
-                    .chapters
-                    .first { it.number == state.chapter }
-                    .verses
-                    .first { it.number == state.verse }
-                    .text
-            } catch (e: NoSuchElementException) {
-                null
-            }
-        }
+        val annotatedText = state.processedVerseTexts[bibleName]
 
-        if (verseText != null) {
-            var wordCounter = 0
-            val greekRegex = Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""")
-            val annotatedText = buildAnnotatedString { 
-                // Split by spaces for word-by-word annotation
-                verseText.split(" ").forEach { word ->
-                    pushStringAnnotation(wordCounter.toString(), word)
-                    append(word)
-                    append(" ")
-                    pop()
-                    wordCounter += 1
-                }
-            }
+        if (annotatedText != null) {
 
             // Compact verse text display
             Column {
@@ -319,6 +310,24 @@ private fun CompactVerseCard(
                             letterSpacing = 0.sp,
                             color = MaterialTheme.colors.onSurface
                         )
+                    )
+                }
+
+                // Display phonetics if enabled and available for this Bible
+                if (state.showPhonetics && state.phoneticTexts.containsKey(bibleName)) {
+                    Text(
+                        text = "Pronunciation: ${state.phoneticTexts[bibleName]}",
+                        style = MaterialTheme.typography.caption.copy(
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 10.sp
+                        ),
+                        color = MaterialTheme.colors.primary.copy(alpha = 0.7f),
+                        modifier = Modifier
+                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                            .background(MaterialTheme.colors.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
+                            .padding(4.dp)
+                            .fillMaxWidth()
                     )
                 }
 
@@ -404,6 +413,8 @@ private fun ExpandedVerseCard(
     onToggleCrossReference: () -> Unit = {},
     onWordSelected: (Int) -> Unit
 ) {
+    // Remember the regex to avoid recreating it on each recomposition
+    val greekRegex = remember { Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""") }
     Row(
         modifier = Modifier
             .padding(8.dp)
@@ -488,24 +499,9 @@ private fun ExpandedVerseCard(
         Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 4.dp)) {
             var counter = 0
             for (bibleName in state.bibles.keys) {
-                val verseText = state.bibles[bibleName]?.let { bible ->
-                    val testament = if (state.book > 39) "New" else "Old"
-                    try {
-                        bible.testaments
-                            .first { it.name == testament }
-                            .books
-                            .first { it.number == state.book }
-                            .chapters
-                            .first { it.number == state.chapter }
-                            .verses
-                            .first { it.number == state.verse }
-                            .text
-                    } catch (e: NoSuchElementException) {
-                        null
-                    }
-                }
+                val annotatedText = state.processedVerseTexts[bibleName]
 
-                if (verseText != null) {
+                if (annotatedText != null) {
                     // Add divider between translations if not the first one
                     if (counter > 0) {
                         Divider(
@@ -521,19 +517,6 @@ private fun ExpandedVerseCard(
                         color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
                         modifier = Modifier.padding(bottom = 2.dp, top = if (counter > 0) 4.dp else 0.dp)
                     )
-
-                    var wordCounter = 0
-                    val greekRegex = Regex("""[\u0370-\u03FF\u1F00-\u1FFF]""")
-                    val annotatedText = buildAnnotatedString { 
-                        // Split by spaces for word-by-word annotation
-                        verseText.split(" ").forEach { word ->
-                            pushStringAnnotation(wordCounter.toString(), word)
-                            append(word)
-                            append(" ")
-                            pop()
-                            wordCounter += 1
-                        }
-                    }
 
                     // Improved verse text display
                     SelectionContainer {
@@ -566,6 +549,23 @@ private fun ExpandedVerseCard(
                                 letterSpacing = 0.sp,
                                 color = MaterialTheme.colors.onSurface
                             )
+                        )
+                    }
+
+                    // Display phonetics if enabled and available for this Bible
+                    if (state.showPhonetics && state.phoneticTexts.containsKey(bibleName)) {
+                        Text(
+                            text = "Pronunciation: ${state.phoneticTexts[bibleName]}",
+                            style = MaterialTheme.typography.caption.copy(
+                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                fontWeight = FontWeight.Normal
+                            ),
+                            color = MaterialTheme.colors.primary.copy(alpha = 0.7f),
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
+                                .background(MaterialTheme.colors.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
+                                .padding(8.dp)
+                                .fillMaxWidth()
                         )
                     }
 

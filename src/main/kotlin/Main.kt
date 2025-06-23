@@ -26,11 +26,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import bibles.*
-import bibles.bookList
-import nl.marc_apps.tts.TextToSpeechEngine
-import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
-import nl.marc_apps.tts.rememberTextToSpeechOrNull
+import locale.L
+import phonetics.PhoneticLanguage
+import phonetics.PhoneticSettings
+import phonetics.rememberPhoneticSettings
 import theme.BibleProTheme
 import theme.ThemeMode
 import theme.ThemeToggle
@@ -45,6 +44,9 @@ import GlobalNotesView
 fun App() {
     // Theme state to manage light/dark mode
     val themeState = rememberThemeState(initialThemeMode = ThemeMode.SYSTEM)
+
+    // Phonetics settings to manage phonetics display
+    val phoneticSettings = rememberPhoneticSettings(initialShowPhonetics = false, initialLanguage = PhoneticLanguage.NONE)
 
     BibleProTheme(themeMode = themeState.themeMode) {
         var m by remember { mutableStateOf(1) }
@@ -74,7 +76,8 @@ fun App() {
                                 { notes_count += 1 },
                                 it,  
                                 m.toFloat(),
-                                themeState = themeState
+                                themeState = themeState,
+                                phoneticSettings = phoneticSettings
                             )
                         }
                     }
@@ -119,7 +122,7 @@ fun App() {
 }
 
 fun main() = application {
-    Window(onCloseRequest = ::exitApplication, title = "BiblePro") {
+    Window(onCloseRequest = ::exitApplication, title = L.current.l("BiblePro")) {
         App()
     }
 }

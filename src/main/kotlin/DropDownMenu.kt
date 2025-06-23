@@ -26,16 +26,84 @@ fun MinimalDropdownMenu() {
             modifier = Modifier.background(MaterialTheme.colors.surface)
         ) {
             DropdownMenuItem(
+                content = { Text("العربية") },
+                onClick = { L.current.language = "arabic" }
+            )
+            DropdownMenuItem(
+                content = { Text("বাংলা") },
+                onClick = { L.current.language = "bengali" }
+            )
+            DropdownMenuItem(
+                content = { Text("中文") },
+                onClick = { L.current.language = "chinese" }
+            )
+            DropdownMenuItem(
                 content = { Text("English") },
                 onClick = { L.current.language = "english" }
+            )
+            DropdownMenuItem(
+                content = { Text("Français") },
+                onClick = { L.current.language = "french" }
+            )
+            DropdownMenuItem(
+                content = { Text("Deutsch") },
+                onClick = { L.current.language = "german" }
+            )
+            DropdownMenuItem(
+                content = { Text("हिन्दी") },
+                onClick = { L.current.language = "hindi" }
+            )
+            DropdownMenuItem(
+                content = { Text("Italiano") },
+                onClick = { L.current.language = "italian" }
+            )
+            DropdownMenuItem(
+                content = { Text("日本語") },
+                onClick = { L.current.language = "japanese" }
+            )
+            DropdownMenuItem(
+                content = { Text("Basa Jawa") },
+                onClick = { L.current.language = "javanese" }
+            )
+            DropdownMenuItem(
+                content = { Text("한국어") },
+                onClick = { L.current.language = "korean" }
+            )
+            DropdownMenuItem(
+                content = { Text("मराठी") },
+                onClick = { L.current.language = "marathi" }
+            )
+            DropdownMenuItem(
+                content = { Text("Português") },
+                onClick = { L.current.language = "portuguese" }
+            )
+            DropdownMenuItem(
+                content = { Text("Русский") },
+                onClick = { L.current.language = "russian" }
             )
             DropdownMenuItem(
                 content = { Text("Español") },
                 onClick = { L.current.language = "spanish" }
             )
             DropdownMenuItem(
-                content = { Text("Français") },
-                onClick = { L.current.language = "french" }
+                content = { Text("தமிழ்") },
+                onClick = { L.current.language = "tamil" }
+            )
+            DropdownMenuItem(
+                content = { Text("తెలుగు") },
+                onClick = { L.current.language = "telugu" }
+            )
+            DropdownMenuItem(
+                content = { Text("Türkçe") },
+                onClick = { L.current.language = "turkish" }
+            )
+            DropdownMenuItem(
+                content = { Text("اردو") },
+                onClick = { L.current.language = "urdu" }
+            )
+            DropdownMenuItem(
+                content = { Text("Tiếng Việt") },
+                onClick = { L.current.language = "vietnamese" }
             )
         }
     }

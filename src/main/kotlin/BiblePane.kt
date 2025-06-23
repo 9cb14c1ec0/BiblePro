@@ -17,16 +17,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import bibles.*
 import kotlinx.coroutines.flow.StateFlow
-import nl.marc_apps.tts.TextToSpeechEngine
-import nl.marc_apps.tts.experimental.ExperimentalDesktopTarget
-import nl.marc_apps.tts.rememberTextToSpeechOrNull
+import locale.L
+import phonetics.PhoneticLanguage
+import phonetics.PhoneticSettings
+import phonetics.PhoneticToggle
+import phonetics.rememberPhoneticSettings
 import theme.ThemeMode
 import theme.ThemeState
 import theme.ThemeToggle
 import viewmodels.BibleState
 import viewmodels.BibleViewModel
 
-@OptIn(ExperimentalDesktopTarget::class)
+
 @Composable
 fun BiblePane(
     OnAddClicked: () -> Unit,
@@ -36,7 +38,8 @@ fun BiblePane(
     thisUnit: Int,
     totalUnits: Float,
     viewModel: BibleViewModel = remember { BibleViewModel() },
-    themeState: ThemeState? = null
+    themeState: ThemeState? = null,
+    phoneticSettings: PhoneticSettings = rememberPhoneticSettings()
 ) {
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
@@ -46,7 +49,7 @@ fun BiblePane(
 
     Row(modifier = Modifier.padding(5.dp)) {
         MyComboBox(
-            "Bibles", bibleList,
+            L.current.l("Bibles"), bibleList,
             onOptionsChosen = { selectedOptions ->
                 // Load selected Bibles using ViewModel
                 viewModel.loadBibles(selectedOptions.map { it.text })
@@ -60,13 +63,16 @@ fun BiblePane(
         themeState?.let {
             ThemeToggle(themeState = it)
         }
+
+        // Add phonetics toggle
+        PhoneticToggle(phoneticSettings = phoneticSettings)
         if(totalUnits > 1) {
             MyDropdownMenu(
                 listOf(
-                    ComboOption("New Bible", -1),
-                    ComboOption("Close Bible", 1),
-                    ComboOption("New Search", 2),
-                    ComboOption("Global Notes", 3)
+                    ComboOption(L.current.l("New Bible"), -1),
+                    ComboOption(L.current.l("Close Bible"), 1),
+                    ComboOption(L.current.l("New Search"), 2),
+                    ComboOption(L.current.l("Global Notes"), 3)
                 ),
                 Icons.Filled.MoreVert,
                 OnSelectionChange = { i ->
@@ -84,9 +90,9 @@ fun BiblePane(
         } else if(totalUnits.toInt() == 1) {
             MyDropdownMenu(
                 listOf(
-                    ComboOption("New Bible", -1),
-                    ComboOption("New Search", 2),
-                    ComboOption("Global Notes", 3)
+                    ComboOption(L.current.l("New Bible"), -1),
+                    ComboOption(L.current.l("New Search"), 2),
+                    ComboOption(L.current.l("Global Notes"), 3)
                 ),
                 Icons.Filled.MoreVert,
                 OnSelectionChange = { i ->
@@ -103,20 +109,21 @@ fun BiblePane(
     }
 
     Row(modifier = Modifier.padding(5.dp)) {
+        val localizedBookList = getLocalizedBookList()
         DropdownMenuBox(
-            "Book", 
-            bookList.firstOrNull { it.id == state.bookId }?.text ?: "", 
-            bookList.map { it.text }, 
+            L.current.l("Book"), 
+            localizedBookList.firstOrNull { it.id == state.bookId }?.text ?: "", 
+            localizedBookList.map { it.text }, 
             { selected ->
                 // Select book using ViewModel
-                val bookId = bookList.first { it.text == selected }.id
+                val bookId = localizedBookList.first { it.text == selected }.id
                 viewModel.selectBook(bookId)
             }, 
             modifier = Modifier.weight(1f).padding(5.dp)
         )
 
         DropdownMenuBox(
-            "Chapter", 
+            L.current.l("Chapter"), 
             state.chapterNum.toString(), 
             state.chapters, 
             { selected ->
@@ -170,13 +177,15 @@ fun BiblePane(
                                         item + 1, 
                                         wordIndex
                                     )
-                                }
+                                },
+                                showPhonetics = phoneticSettings.showPhonetics,
+                                phoneticLanguage = phoneticSettings.language
                             )
                         })
                     }
                 }
             } else {
-                Text("Error loading Bible content", Modifier.padding(5.dp))
+                Text(L.current.l("Error loading Bible content"), Modifier.padding(5.dp))
             }
         }
     }

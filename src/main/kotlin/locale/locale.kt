@@ -1,68 +1,58 @@
 package locale
 
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 
-val spanish_strings: Map<String, String> = mapOf(
-    "Bible Expert" to "Experto en Biblia",
-    "Bibles" to "Biblias",
-    "Book" to "Libro",
-    "English Amplified Bible" to "Biblia Amplificada en Inglés",
-    "English Chain Reference" to "Referencia en Cadena en Inglés",
-    "English KJV" to "KJV en Inglés",
-    "English Tyndale 1537" to "Tyndale 1537 en Inglés",
-    "English YLT" to "YLT en Inglés",
-    "Greek Textus Receptus" to "Textus Receptus en Griego",
-    "Spanish RV 2020" to "RV 2020 en Español",
-);
-
-val french_strings: Map<String, String> = mapOf(
-    "Bibles" to "Bibles",
-    "Bible Expert" to "Expert en Bible",
-    "Book" to "Livre",
-    "English Amplified Bible" to "Bible Amplifiée en Anglais",
-    "English Chain Reference" to "Référence en Chaîne en Anglais",
-    "English KJV" to "KJV en Anglais",
-    "English Tyndale 1537" to "Tyndale 1537 en Anglais",
-    "English YLT" to "YLT en Anglais",
-    "Greek Textus Receptus" to "Textus Receptus en Grec",
-    "Spanish RV 2020" to "RV 2020 en Espagnol",
-)
-
-val german_strings: Map<String, String> = mapOf(
-    "Bibles" to "Bibeln",
-    "Bible Expert" to "Bibel-Experte",
-    "Book" to "Buch",
-    "English Amplified Bible" to "Englische Amplified Bible",
-    "English Chain Reference" to "Englische Chain Reference",
-    "English KJV" to "Englische KJV",
-    "English Tyndale 1537" to "Englische Tyndale 1537",
-    "English YLT" to "Englische YLT",
-    "Greek Textus Receptus" to "Griechische Textus Receptus",
-    "Spanish RV 2020" to "Spanische RV 2020",
-)
-
-val hindi_strings: Map<String, String> = mapOf(
-    "Bibles" to "बाइबल",
-    "Bible Expert" to "बाइबल विशेषज्ञ",
-    "Book" to "पुस्तक",
-    "English Amplified Bible" to "अंग्रेजी एम्प्लीफाइड बाइबिल",
-    "English Chain Reference" to "अंग्रेजी चेन रेफरेंस",
-    "English KJV" to "अंग्रेजी केजेवी",
-    "English Tyndale 1537" to "अंग्रेजी टिंडेल 1537",
-    "English YLT" to "अंग्रेजी वाईएलटी",
-    "Greek Textus Receptus" to "ग्रीक टेक्स्टस रेसेप्टस",
-    "Spanish RV 2020" to "स्पेनिश आरवी 2020",
-)
+// Import language maps from their respective files
+// The language string variables are defined in their respective files
+import locale.spanish_strings
+import locale.french_strings
+import locale.german_strings
+import locale.hindi_strings
+import locale.italian_strings
+import locale.chinese_strings
+import locale.arabic_strings
+import locale.portuguese_strings
+import locale.bengali_strings
+import locale.russian_strings
+import locale.japanese_strings
+import locale.javanese_strings
+import locale.telugu_strings
+import locale.marathi_strings
+import locale.turkish_strings
+import locale.tamil_strings
+import locale.urdu_strings
+import locale.vietnamese_strings
+import locale.korean_strings
 
 val local_map: Map<String, Map<String, String>> = mapOf(
     "spanish" to spanish_strings,
     "french" to french_strings,
-    "german" to german_strings
+    "german" to german_strings,
+    "hindi" to hindi_strings,
+    "italian" to italian_strings,
+    "chinese" to chinese_strings,
+    "arabic" to arabic_strings,
+    "portuguese" to portuguese_strings,
+    "bengali" to bengali_strings,
+    "russian" to russian_strings,
+    "japanese" to japanese_strings,
+    "javanese" to javanese_strings,
+    "telugu" to telugu_strings,
+    "marathi" to marathi_strings,
+    "turkish" to turkish_strings,
+    "tamil" to tamil_strings,
+    "urdu" to urdu_strings,
+    "vietnamese" to vietnamese_strings,
+    "korean" to korean_strings
 );
 
 @Immutable
 class L {
-    var language: String = "english"
+    private val _language = mutableStateOf("english")
+    var language: String by _language
     companion object {
         val current = L()
     }
@@ -84,6 +74,7 @@ class L {
     }
 }
 
+// Deprecated: Use L.current.l() instead
 fun l(key: String): String {
-    return spanish_strings[key] ?: key
+    return L.current.l(key)
 }

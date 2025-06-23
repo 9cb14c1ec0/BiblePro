@@ -1,6 +1,8 @@
 package bibles
 
 import ComboOption
+import androidx.compose.runtime.Composable
+import locale.L
 
 val bibleList = listOf(
     ComboOption("English Amplified Bible", 0),
@@ -9,8 +11,27 @@ val bibleList = listOf(
     ComboOption("English Tyndale 1537", 3),
     ComboOption("English YLT", 4),
     ComboOption("Greek Textus Receptus", 5),
-    ComboOption("Spanish RV 2020", 6)
+    ComboOption("Spanish RV 2020", 6),
+    ComboOption("Torreys Topical Textbook", 7)
 )
+
+/**
+ * Returns a localized version of the Bible list.
+ * Each Bible name is passed through the localization function.
+ */
+@Composable
+fun getLocalizedBibleList(): List<ComboOption> {
+    return bibleList.map { ComboOption(L.current.l(it.text), it.id) }
+}
+
+/**
+ * Returns a localized version of the book list.
+ * Each book name is passed through the localization function.
+ */
+@Composable
+fun getLocalizedBookList(): List<ComboOption> {
+    return bookList.map { ComboOption(L.current.l(it.text), it.id) }
+}
 
 val bookList = listOf(
     // Old Testament
