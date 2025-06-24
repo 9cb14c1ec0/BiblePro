@@ -51,3 +51,83 @@ class StrongsLoad {
         return l
     }
 }
+
+/**
+ * Singleton cache for lexicon data to avoid reloading on every word click.
+ * Provides efficient O(1) lookups for Strong's numbers and verse mappings.
+ */
+object LexiconCache {
+    private var lexiconData: LexiconDictionary? = null
+    private var strongsMappingData: List<StrongsMappingVerse>? = null
+    
+    // Efficient lookup maps - built once, used many times
+    private var strongsToLexiconMap: Map<String, LexiconEntry>? = null
+    private var verseToStrongsMap: Map<String, StrongsMappingVerse>? = null
+    
+    /**
+     * Gets the lexicon dictionary, loading it once and caching for subsequent calls
+     */
+    fun getLexicon(): LexiconDictionary {
+        if (lexiconData == null) {
+            lexiconData = LexiconLoad().loadLexicon()
+            buildLexiconIndex()
+        }
+        return lexiconData!!
+    }
+    
+    /**
+     * Gets the Strong's mapping data, loading it once and caching for subsequent calls
+     */
+    fun getStrongsMapping(): List<StrongsMappingVerse> {
+        if (strongsMappingData == null) {
+            strongsMappingData = StrongsLoad().loadStrongsMapping()
+            buildStrongsIndex()
+        }
+        return strongsMappingData!!
+    }
+    
+    /**
+     * Fast O(1) lookup for lexicon entry by Strong's number
+     */
+    fun getLexiconEntryByStrongs(strongsNumber: String): LexiconEntry? {
+        if (strongsToLexiconMap == null) {
+            getLexicon() // This will build the index
+        }
+        return strongsToLexiconMap?.get(strongsNumber)
+    }
+    
+    /**
+     * Fast O(1) lookup for verse Strong's mapping
+     */
+    fun getStrongsMappingForVerse(book: Int, chapter: Int, verse: Int): StrongsMappingVerse? {
+        if (verseToStrongsMap == null) {
+            getStrongsMapping() // This will build the index
+        }
+        val key = "$book.$chapter.$verse"
+        return verseToStrongsMap?.get(key)
+    }
+    
+    /**
+     * Build efficient lookup index for lexicon entries by Strong's number
+     */
+    private fun buildLexiconIndex() {
+        val lexicon = lexiconData ?: return
+        strongsToLexiconMap = lexicon.entries.values.associateBy { it.strong }
+    }
+    
+    /**
+     * Build efficient lookup index for Strong's mappings by verse reference
+     */
+    private fun buildStrongsIndex() {
+        val mappings = strongsMappingData ?: return
+        verseToStrongsMap = mappings.associateBy { "${it.book}.${it.chapter}.${it.verse}" }
+    }
+    
+    /**
+     * Preload all lexicon data in background (call during app startup)
+     */
+    fun preloadData() {
+        getLexicon()
+        getStrongsMapping()
+    }
+}

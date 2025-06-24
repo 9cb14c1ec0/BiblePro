@@ -102,22 +102,25 @@ class BibleViewModel {
      * @return The lexicon entry text
      */
     fun getLexiconEntry(bookId: Int, chapterNum: Int, verseNum: Int, wordIndex: Int): String {
-        val lexicon = LexiconLoad().loadLexicon()
-        val strongsMapping = StrongsLoad().loadStrongsMapping()
-
         try {
-            val strongsVerse = strongsMapping.first { 
-                it.book == (bookId - 39) && 
-                it.chapter == chapterNum && 
-                it.verse == verseNum 
-            }
+            // Fast O(1) lookup using cached data
+            val strongsVerse = LexiconCache.getStrongsMappingForVerse(
+                book = bookId - 39,
+                chapter = chapterNum, 
+                verse = verseNum
+            ) ?: return ""
+
+            // Ensure wordIndex is valid
+            if (wordIndex >= strongsVerse.words.size) return ""
 
             val strongs = strongsVerse.words[wordIndex]
-            val formattedStrongs = "%04d".format(strongs.toInt())
-            val lexiconKey = lexicon.entries.filter { it.value.strong == "g$formattedStrongs" }.keys.firstOrNull()
+            val formattedStrongs = "g%04d".format(strongs.toInt())
+            
+            // Fast O(1) lookup for lexicon entry
+            val lexiconEntry = LexiconCache.getLexiconEntryByStrongs(formattedStrongs)
 
-            return if (lexiconKey != null) {
-                "Strongs: ${lexicon.entries[lexiconKey]!!.definition}"
+            return if (lexiconEntry != null) {
+                "Strong's: ${lexiconEntry.definition}"
             } else {
                 ""
             }

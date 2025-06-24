@@ -244,7 +244,7 @@ private fun CompactVerseCard(
             contentDescription = if (state.hasNote) "Edit note" else "Add note",
             tint = if (state.hasNote) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
             modifier = Modifier
-                .size(18.dp)
+                .size(24.dp)
                 .align(Alignment.CenterVertically)
                 .clickable(onClick = onShowNoteDialog)
                 .padding(end = 4.dp)
@@ -256,7 +256,7 @@ private fun CompactVerseCard(
             contentDescription = if (state.isHighlighted) "Disable highlighting" else "Enable highlighting",
             tint = if (state.isHighlighted) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
             modifier = Modifier
-                .size(18.dp)
+                .size(24.dp)
                 .align(Alignment.CenterVertically)
                 .clickable(onClick = onToggleHighlight)
                 .padding(end = 4.dp)
@@ -268,7 +268,7 @@ private fun CompactVerseCard(
             contentDescription = "Cross References",
             tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
             modifier = Modifier
-                .size(18.dp)
+                .size(24.dp)
                 .align(Alignment.CenterVertically)
                 .clickable(onClick = onToggleCrossReference)
                 .padding(end = 4.dp)
@@ -388,7 +388,7 @@ private fun CrossReferenceSection(
 
                 IconButton(
                     onClick = { onRemoveReference(reference) },
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Text(
                         "×",
@@ -435,7 +435,7 @@ private fun ExpandedVerseCard(
             // Verse number in a circle with read indicator
             Box(
                 modifier = Modifier
-                    .size(28.dp)
+                    .size(36.dp)
                     .background(
                         if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.15f) 
                         else MaterialTheme.colors.primary.copy(alpha = 0.1f), 
@@ -464,7 +464,7 @@ private fun ExpandedVerseCard(
                 contentDescription = if (state.hasNote) "Edit note" else "Add note",
                 tint = if (state.hasNote) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(28.dp)
                     .padding(start = 4.dp)
                     .clickable(onClick = onShowNoteDialog)
             )
@@ -475,7 +475,7 @@ private fun ExpandedVerseCard(
                 contentDescription = if (state.isHighlighted) "Disable highlighting" else "Enable highlighting",
                 tint = if (state.isHighlighted) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(28.dp)
                     .padding(start = 4.dp)
                     .clickable(onClick = onToggleHighlight)
             )
@@ -486,7 +486,7 @@ private fun ExpandedVerseCard(
                 contentDescription = "Cross References",
                 tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
                 modifier = Modifier
-                    .size(20.dp)
+                    .size(28.dp)
                     .padding(start = 4.dp)
                     .clickable(onClick = onToggleCrossReference)
             )

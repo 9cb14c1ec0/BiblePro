@@ -1,8 +1,6 @@
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
@@ -47,7 +45,12 @@ fun BiblePane(
     // Local state for lexicon text (could be moved to ViewModel in future iterations)
     var lexiconText by remember { mutableStateOf("") }
 
-    Row(modifier = Modifier.padding(5.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.background)
+    ) {
+        Row(modifier = Modifier.padding(5.dp)) {
         MyComboBox(
             L.current.l("Bibles"), bibleList,
             onOptionsChosen = { selectedOptions ->
@@ -106,9 +109,9 @@ fun BiblePane(
                 }
             )
         }
-    }
+        }
 
-    Row(modifier = Modifier.padding(5.dp)) {
+        Row(modifier = Modifier.padding(5.dp)) {
         val localizedBookList = getLocalizedBookList()
         DropdownMenuBox(
             L.current.l("Book"), 
@@ -135,10 +138,9 @@ fun BiblePane(
             filterOptions = false, 
             modifier = Modifier.weight(1f).padding(5.dp)
         )
+        }
 
-    }
-
-    if (state.bibleCount > 0) {
+        if (state.bibleCount > 0) {
         val testament = if (state.bookId > 39) "New" else "Old"
 
         // Get reference to KJV Bible for structure
@@ -161,8 +163,13 @@ fun BiblePane(
             if (bookAndChapter != null) {
                 val (book, chapter) = bookAndChapter
 
-                Row {
-                    LazyColumn(modifier = Modifier.fillMaxWidth().fillMaxHeight(0.92F).border(2.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.5f))) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .background(MaterialTheme.colors.background)
+                        .border(2.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.5f))
+                ) {
                         items(count = chapter.verses.size, itemContent = { item ->
                             VerseCard(
                                 bibles = state.bibles, 
@@ -182,13 +189,48 @@ fun BiblePane(
                                 phoneticLanguage = phoneticSettings.language
                             )
                         })
-                    }
                 }
             } else {
                 Text(L.current.l("Error loading Bible content"), Modifier.padding(5.dp))
             }
         }
+    } else {
+        // Empty state with proper theming when no Bible is selected
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .background(MaterialTheme.colors.background)
+                .border(2.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.5f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = L.current.l("Select a Bible to begin reading"),
+                    style = MaterialTheme.typography.h6,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f),
+                    modifier = Modifier.padding(16.dp)
+                )
+                Text(
+                    text = L.current.l("Choose from available translations above"),
+                    style = MaterialTheme.typography.body2,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
+                )
+            }
+        }
     }
 
-    Text(lexiconText, Modifier.padding(5.dp))
+        // Lexicon text with fixed height at bottom
+        Text(
+            text = lexiconText, 
+            color = MaterialTheme.colors.onSurface,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(40.dp)
+                .padding(5.dp)
+        )
+    }
 }

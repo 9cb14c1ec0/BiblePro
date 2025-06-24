@@ -32,7 +32,23 @@ val bibleList = listOf(
     ComboOption("Swedish Bible", 24),
     ComboOption("Tagalog Bible", 25),
     ComboOption("Thai Bible", 26),
-    ComboOption("Yoruba Bible", 27)
+    ComboOption("Yoruba Bible", 27),
+    ComboOption("French Bible", 28),
+    ComboOption("Hindi Bible", 29),
+    ComboOption("Italian Bible", 30),
+    ComboOption("Chinese Bible", 31),
+    ComboOption("Arabic Bible", 32),
+    ComboOption("Portuguese Bible", 33),
+    ComboOption("Bengali Bible", 34),
+    ComboOption("Russian Bible", 35),
+    ComboOption("Japanese Bible", 36),
+    ComboOption("Javanese Bible", 37),
+    ComboOption("Telugu Bible", 38),
+    ComboOption("Marathi Bible", 39),
+    ComboOption("Tamil Bible", 40),
+    ComboOption("Urdu Bible", 41),
+    ComboOption("Vietnamese Bible", 42),
+    ComboOption("Korean Bible", 43)
 )
 
 /**
