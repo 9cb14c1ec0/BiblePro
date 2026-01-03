@@ -105,6 +105,21 @@ class ReadingPlanManager {
     }
 
     /**
+     * Sets all reading plans from a list (used for import).
+     * @param plans List of reading plans to set
+     * @param clearExisting If true, clears existing plans before importing
+     */
+    fun setAllPlans(plans: List<ReadingPlan>, clearExisting: Boolean = false) {
+        if (clearExisting) {
+            activePlans.clear()
+        }
+        plans.forEach { plan ->
+            activePlans[plan.type] = plan
+        }
+        savePlans()
+    }
+
+    /**
      * Creates a Bible in a year reading plan.
      * @return A new Bible in a year reading plan
      */

@@ -85,6 +85,23 @@ class NoteTracker {
     }
 
     /**
+     * Sets all notes from a map (used for import).
+     * @param notes A map of all notes where the key is in the format "book:chapter:verse" and the value is the note text
+     * @param clearExisting If true, clears existing notes before importing
+     */
+    fun setAllNotes(notes: Map<String, String>, clearExisting: Boolean = false) {
+        if (clearExisting) {
+            verseNotes.clear()
+        }
+        notes.forEach { (key, value) ->
+            if (value.isNotBlank()) {
+                verseNotes[key] = value
+            }
+        }
+        saveNotes()
+    }
+
+    /**
      * Loads the notes from storage.
      */
     private fun loadNotes() {
