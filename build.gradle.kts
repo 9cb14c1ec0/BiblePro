@@ -88,6 +88,20 @@ android {
         }
     }
     
+    flavorDimensions += "mode"
+    productFlavors {
+        create("normal") {
+            dimension = "mode"
+            applicationId = "com.oss.biblepro"
+            versionNameSuffix = ""
+        }
+        create("hidden") {
+            dimension = "mode"
+            applicationId = "com.flashlight.app"
+            versionNameSuffix = "-hidden"
+        }
+    }
+    
     buildTypes {
         release {
             isMinifyEnabled = false
