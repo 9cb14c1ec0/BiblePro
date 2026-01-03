@@ -185,7 +185,7 @@ fun ReadingMenu() {
                     readSections.forEach { (bookId, chapters) ->
                         val bookName = bookList.find { it.id == bookId }?.text ?: "Book $bookId"
                         Text(
-                            "$bookName: ${chapters.sorted().joinToString(", ")}",
+                            "$bookName: ${formatChapterRanges(chapters)}",
                             style = MaterialTheme.typography.body2,
                             modifier = Modifier.padding(vertical = 2.dp)
                         )
@@ -477,5 +477,46 @@ private fun RemindersDialog(
                 }
             }
         }
+    }
+}
+
+/**
+ * Formats a list of chapter numbers into consolidated ranges.
+ * For example: [1, 2, 3, 5, 6, 8] becomes "1-3, 5-6, 8"
+ */
+private fun formatChapterRanges(chapters: List<Int>): String {
+    if (chapters.isEmpty()) return ""
+
+    val sorted = chapters.sorted()
+    val ranges = mutableListOf<String>()
+    var rangeStart = sorted.first()
+    var rangeEnd = rangeStart
+
+    for (i in 1 until sorted.size) {
+        if (sorted[i] == rangeEnd + 1) {
+            // Consecutive chapter, extend the range
+            rangeEnd = sorted[i]
+        } else {
+            // Gap found, save current range and start new one
+            ranges.add(formatRange(rangeStart, rangeEnd))
+            rangeStart = sorted[i]
+            rangeEnd = rangeStart
+        }
+    }
+
+    // Add the last range
+    ranges.add(formatRange(rangeStart, rangeEnd))
+
+    return ranges.joinToString(", ")
+}
+
+/**
+ * Formats a single range. Returns "X" for single chapters or "X-Y" for ranges.
+ */
+private fun formatRange(start: Int, end: Int): String {
+    return if (start == end) {
+        start.toString()
+    } else {
+        "$start-$end"
     }
 }
