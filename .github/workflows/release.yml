@@ -6,11 +6,8 @@ name: Package BiblePro App
 # - Builds for Linux (deb/rpm), Windows (msi), and Android (apk)
 
 on:
-  workflow_dispatch:
-  pull_request:
-  push:
-    tags:
-      - 'v*'
+  release:
+    types: [published]
 
 jobs:
   linux:
@@ -40,6 +37,13 @@ jobs:
             build/compose/binaries/main/deb
             build/compose/binaries/main/rpm
 
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          files: build/compose/binaries/main/*/*
+          prerelease: ${{ github.ref_type != 'tag' }}
   windows:
     name: Package on Windows
     runs-on: windows-latest
@@ -60,6 +64,14 @@ jobs:
             ${{ runner.os }}-gradle-
       - name: Build
         run: ./gradlew packageMsi
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          files: build/compose/binaries/main/msi/*
+          prerelease: ${{ github.ref_type != 'tag' }}
 
   android:
     name: Build Android APK
@@ -108,3 +120,13 @@ jobs:
         with:
           name: android-release-apk
           path: build/outputs/apk/release/*.apk
+      
+      - name: Release APKs
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || 'nightly' }}
+          files: |
+            build/outputs/apk/debug/*.apk
+            build/outputs/apk/release/*.apk
+          prerelease: ${{ github.ref_type != 'tag' }}
