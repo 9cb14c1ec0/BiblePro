@@ -27,6 +27,9 @@ object CommonIcons {
     // Dark mode - use dark mode icon
     val DarkMode: ImageVector = Icons.Outlined.DarkMode
     
-    // Light mode - use light mode icon  
+    // Light mode - use light mode icon
     val LightMode: ImageVector = Icons.Outlined.LightMode
+
+    // Settings - use settings icon
+    val Settings: ImageVector = Icons.Outlined.Settings
 }

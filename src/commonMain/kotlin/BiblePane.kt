@@ -3,27 +3,18 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import icons.CommonIcons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import bibles.*
-import kotlinx.coroutines.flow.StateFlow
 import locale.L
-import phonetics.PhoneticLanguage
 import phonetics.PhoneticSettings
-import phonetics.PhoneticToggle
 import phonetics.rememberPhoneticSettings
-import theme.ThemeMode
 import theme.ThemeState
-import theme.ThemeToggle
-import viewmodels.BibleState
 import viewmodels.BibleViewModel
 
 
@@ -62,13 +53,13 @@ fun BiblePane(
         )
         MinimalDropdownMenu()
         ReadingMenu()
-        // Add theme toggle if themeState is provided
-        themeState?.let {
-            ThemeToggle(themeState = it)
-        }
 
-        // Add phonetics toggle
-        PhoneticToggle(phoneticSettings = phoneticSettings)
+        // Add settings menu with theme and phonetics options
+        SettingsMenu(
+            themeState = themeState,
+            phoneticSettings = phoneticSettings
+        )
+
         if(totalUnits > 1) {
             MyDropdownMenu(
                 listOf(

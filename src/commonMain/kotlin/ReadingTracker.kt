@@ -312,6 +312,31 @@ class ReadingTracker {
     }
 
     /**
+     * Gets all read timestamps.
+     * @return A map where the key is in the format "book:chapter:verse" and the value is the date string
+     */
+    fun getAllReadTimestamps(): Map<String, String> {
+        return readTimestamps.toMap()
+    }
+
+    /**
+     * Sets all read timestamps from a map (used for import).
+     * @param timestamps A map where the key is in the format "book:chapter:verse" and the value is the date string
+     * @param clearExisting If true, clears existing reading data before importing
+     */
+    fun setAllReadTimestamps(timestamps: Map<String, String>, clearExisting: Boolean = false) {
+        if (clearExisting) {
+            readVerses.clear()
+            readTimestamps.clear()
+        }
+        timestamps.forEach { (key, value) ->
+            readVerses[key] = true
+            readTimestamps[key] = value
+        }
+        saveReadingStatus()
+    }
+
+    /**
      * Loads the reading status from storage.
      */
     private fun loadReadingStatus() {
