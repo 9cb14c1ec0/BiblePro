@@ -36,6 +36,21 @@ fun BiblePane(
     // Local state for lexicon text (could be moved to ViewModel in future iterations)
     var lexiconText by remember { mutableStateOf("") }
 
+    // Load saved Bible preferences on first composition (only for the first pane)
+    val savedBibleIds = remember { if (thisUnit == 1) BiblePreferences.getSelectedBibleIds() else emptyList() }
+
+    // Auto-load saved Bibles on first composition and initialize book/chapter
+    LaunchedEffect(Unit) {
+        if (thisUnit == 1 && savedBibleIds.isNotEmpty()) {
+            val savedBibleNames = bibleList.filter { it.id in savedBibleIds }.map { it.text }
+            if (savedBibleNames.isNotEmpty()) {
+                viewModel.loadBibles(savedBibleNames)
+                // Initialize the chapters list for the default book
+                viewModel.selectBook(viewModel.state.value.bookId)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,8 +62,13 @@ fun BiblePane(
             onOptionsChosen = { selectedOptions ->
                 // Load selected Bibles using ViewModel
                 viewModel.loadBibles(selectedOptions.map { it.text })
+                // Save the selection for next app launch (only for the first pane)
+                if (thisUnit == 1) {
+                    BiblePreferences.setSelectedBibleIds(selectedOptions.map { it.id })
+                }
             },
             modifier = Modifier.weight(1f),
+            selectedIds = if (thisUnit == 1) savedBibleIds else emptyList(),
             singleSelect = false
         )
         MinimalDropdownMenu()
