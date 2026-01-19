@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         // Initialize resource loader with Android context
         initializeResourceLoader(this)
 
-        // Initialize file picker with Android context
+        // Initialize file picker with Activity (MUST be before setContent for ActivityResultLaunchers)
         initializeFilePicker(this)
 
         setContent {

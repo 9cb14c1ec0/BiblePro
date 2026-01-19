@@ -1,83 +1,87 @@
 package backup
 
+import android.app.Activity
 import android.content.Context
-import android.os.Environment
-import java.io.File
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.BufferedReader
+import java.io.InputStreamReader
 
 /**
  * Android implementation of PlatformFilePicker.
- * Uses the app's external files directory for backup storage.
+ * Uses Storage Access Framework (SAF) for file picking.
  */
 actual class PlatformFilePicker {
 
     /**
      * Opens a save file dialog for exporting data.
-     * On Android, saves to the app's external files directory.
+     * Uses SAF CREATE_DOCUMENT intent.
      */
     actual fun pickExportLocation(defaultFilename: String, onResult: (String?) -> Unit) {
-        val context = AndroidFilePickerContext.context
-        if (context == null) {
+        val activity = AndroidFilePickerContext.activity
+        if (activity == null) {
             onResult(null)
             return
         }
 
-        // Use external files directory (accessible via file manager)
-        val externalDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-        if (externalDir != null) {
-            if (!externalDir.exists()) {
-                externalDir.mkdirs()
-            }
-            val file = File(externalDir, defaultFilename)
-            onResult(file.absolutePath)
-        } else {
-            // Fallback to internal files directory
-            val internalDir = context.filesDir
-            val file = File(internalDir, defaultFilename)
-            onResult(file.absolutePath)
+        // Store callback for later
+        AndroidFilePickerContext.pendingExportCallback = onResult
+        AndroidFilePickerContext.pendingExportFilename = defaultFilename
+
+        // Launch SAF create document picker
+        try {
+            AndroidFilePickerContext.createDocumentLauncher?.launch(defaultFilename)
+        } catch (e: Exception) {
+            println("Error launching file picker: ${e.message}")
+            onResult(null)
         }
     }
 
     /**
      * Opens an open file dialog for importing data.
-     * On Android, looks for backup files in the app's external files directory.
+     * Uses SAF OPEN_DOCUMENT intent.
      */
     actual fun pickImportFile(onResult: (String?) -> Unit) {
-        val context = AndroidFilePickerContext.context
-        if (context == null) {
+        val activity = AndroidFilePickerContext.activity
+        if (activity == null) {
             onResult(null)
             return
         }
 
-        // Look for the most recent backup file
-        val externalDir = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-        val backupFiles = externalDir?.listFiles { file ->
-            file.isFile && file.name.startsWith("biblepro_backup_") && file.name.endsWith(".json")
-        }?.sortedByDescending { it.lastModified() }
+        // Store callback for later
+        AndroidFilePickerContext.pendingImportCallback = onResult
 
-        if (!backupFiles.isNullOrEmpty()) {
-            onResult(backupFiles.first().absolutePath)
-        } else {
-            // Check internal files directory
-            val internalDir = context.filesDir
-            val internalBackupFiles = internalDir.listFiles { file ->
-                file.isFile && file.name.startsWith("biblepro_backup_") && file.name.endsWith(".json")
-            }?.sortedByDescending { it.lastModified() }
-
-            if (!internalBackupFiles.isNullOrEmpty()) {
-                onResult(internalBackupFiles.first().absolutePath)
-            } else {
-                onResult(null)
-            }
+        // Launch SAF open document picker
+        try {
+            AndroidFilePickerContext.openDocumentLauncher?.launch(arrayOf("application/json", "*/*"))
+        } catch (e: Exception) {
+            println("Error launching file picker: ${e.message}")
+            onResult(null)
         }
     }
 
     /**
-     * Writes content to a file.
+     * Writes content to a file using content URI.
      */
     actual fun writeFile(path: String, content: String): Boolean {
+        val context = AndroidFilePickerContext.context ?: return false
+
         return try {
-            File(path).writeText(content)
-            true
+            // Check if it's a content URI or a file path
+            if (path.startsWith("content://")) {
+                val uri = Uri.parse(path)
+                context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                    outputStream.write(content.toByteArray())
+                }
+                true
+            } else {
+                // Regular file path (fallback)
+                java.io.File(path).writeText(content)
+                true
+            }
         } catch (e: Exception) {
             println("Error writing file: ${e.message}")
             false
@@ -85,11 +89,24 @@ actual class PlatformFilePicker {
     }
 
     /**
-     * Reads content from a file.
+     * Reads content from a file using content URI.
      */
     actual fun readFile(path: String): String? {
+        val context = AndroidFilePickerContext.context ?: return null
+
         return try {
-            File(path).readText()
+            // Check if it's a content URI or a file path
+            if (path.startsWith("content://")) {
+                val uri = Uri.parse(path)
+                context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                    BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                        reader.readText()
+                    }
+                }
+            } else {
+                // Regular file path (fallback)
+                java.io.File(path).readText()
+            }
         } catch (e: Exception) {
             println("Error reading file: ${e.message}")
             null
@@ -98,22 +115,63 @@ actual class PlatformFilePicker {
 }
 
 /**
- * Object to hold Android context for file picker operations.
- * Must be initialized from MainActivity.
+ * Object to hold Android context and activity result launchers for file picker operations.
  */
 object AndroidFilePickerContext {
     var context: Context? = null
         private set
+    var activity: ComponentActivity? = null
+        private set
 
-    fun initialize(context: Context) {
-        this.context = context.applicationContext
+    // Activity result launchers
+    var createDocumentLauncher: ActivityResultLauncher<String>? = null
+        private set
+    var openDocumentLauncher: ActivityResultLauncher<Array<String>>? = null
+        private set
+
+    // Pending callbacks
+    var pendingExportCallback: ((String?) -> Unit)? = null
+    var pendingExportFilename: String? = null
+    var pendingImportCallback: ((String?) -> Unit)? = null
+
+    fun initialize(activity: ComponentActivity) {
+        this.context = activity.applicationContext
+        this.activity = activity
+
+        // Register activity result launchers
+        createDocumentLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.CreateDocument("application/json")
+        ) { uri ->
+            val callback = pendingExportCallback
+            pendingExportCallback = null
+            pendingExportFilename = null
+
+            if (uri != null) {
+                callback?.invoke(uri.toString())
+            } else {
+                callback?.invoke(null)
+            }
+        }
+
+        openDocumentLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.OpenDocument()
+        ) { uri ->
+            val callback = pendingImportCallback
+            pendingImportCallback = null
+
+            if (uri != null) {
+                callback?.invoke(uri.toString())
+            } else {
+                callback?.invoke(null)
+            }
+        }
     }
 }
 
 /**
  * Initialize the Android file picker context.
- * Call this from MainActivity.onCreate().
+ * MUST be called from MainActivity.onCreate() BEFORE setContent().
  */
-fun initializeFilePicker(context: Context) {
-    AndroidFilePickerContext.initialize(context)
+fun initializeFilePicker(activity: ComponentActivity) {
+    AndroidFilePickerContext.initialize(activity)
 }

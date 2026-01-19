@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import icons.CommonIcons
@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownMenuBox(
     label: String,
@@ -56,18 +57,20 @@ fun DropdownMenuBox(
                     //This value is used to assign to the DropDown the same width
                     textfieldSize = coordinates.size.toSize()
                 },
-            label = {Text(label, color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f))},
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                textColor = MaterialTheme.colors.onSurface,
-                cursorColor = MaterialTheme.colors.primary,
-                focusedBorderColor = MaterialTheme.colors.primary,
-                unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
-                backgroundColor = MaterialTheme.colors.surface
+            label = {Text(label, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f))},
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface
             ),
             trailingIcon = {
                 Icon(icon,"contentDescription",
                     Modifier.clickable { expanded = !expanded },
-                    tint = MaterialTheme.colors.onSurface)
+                    tint = MaterialTheme.colorScheme.onSurface)
             }
         )
         DropdownMenu(
@@ -75,30 +78,31 @@ fun DropdownMenuBox(
             onDismissRequest = { expanded = false },
             modifier = Modifier
                 .width(with(LocalDensity.current){textfieldSize.width.toDp()})
-                .background(MaterialTheme.colors.surface)
+                .background(MaterialTheme.colorScheme.surface)
         ) {
             suggestions.filter { !filterOptions or it.startsWith(selectedText) }.forEachIndexed { index, s ->
                 if (index > 0) {
-                    Divider(
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                         thickness = 0.5.dp
                     )
                 }
 
                 DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = s,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    },
                     onClick = {
                         selectedText = s
                         expanded = false
                         onSelection(s)
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = s,
-                        color = MaterialTheme.colors.onSurface,
-                        modifier = Modifier.padding(vertical = 4.dp)
-                    )
-                }
+                )
             }
         }
     }

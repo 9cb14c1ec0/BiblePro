@@ -12,6 +12,19 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 /**
+ * Result of an import operation.
+ */
+sealed class ImportResult {
+    data class Success(
+        val notesCount: Int,
+        val readingStatsCount: Int,
+        val readingPlansCount: Int
+    ) : ImportResult()
+
+    data class Error(val message: String, val details: String? = null) : ImportResult()
+}
+
+/**
  * Manager for exporting and importing backup data.
  * Handles serialization of notes, reading stats, and reading plans.
  */
@@ -35,17 +48,70 @@ object BackupManager {
      * Imports data from a JSON string.
      * @param jsonString The JSON string to import
      * @param clearExisting If true, clears existing data before importing
-     * @return True if import was successful, false otherwise
+     * @return ImportResult with success details or error message
      */
-    fun importFromJson(jsonString: String, clearExisting: Boolean = false): Boolean {
-        return try {
-            val backupData = json.decodeFromString<BackupData>(jsonString)
-            restoreBackupData(backupData, clearExisting)
-            true
-        } catch (e: Exception) {
-            println("Error importing backup: ${e.message}")
-            false
+    fun importFromJson(jsonString: String, clearExisting: Boolean = false): ImportResult {
+        // Check if the string is empty
+        if (jsonString.isBlank()) {
+            return ImportResult.Error("File is empty", "The selected file contains no data.")
         }
+
+        // Check if it looks like JSON
+        val trimmed = jsonString.trim()
+        if (!trimmed.startsWith("{")) {
+            val preview = if (trimmed.length > 100) trimmed.substring(0, 100) + "..." else trimmed
+            return ImportResult.Error(
+                "Invalid file format",
+                "Expected JSON but got: $preview"
+            )
+        }
+
+        // Try to parse the JSON
+        val backupData: BackupData
+        try {
+            backupData = json.decodeFromString<BackupData>(jsonString)
+        } catch (e: kotlinx.serialization.SerializationException) {
+            return ImportResult.Error(
+                "Invalid backup format",
+                "JSON parsing error: ${e.message}"
+            )
+        } catch (e: Exception) {
+            return ImportResult.Error(
+                "Failed to read backup",
+                "${e::class.simpleName}: ${e.message}"
+            )
+        }
+
+        // Validate the backup data
+        if (backupData.version > 1) {
+            return ImportResult.Error(
+                "Incompatible backup version",
+                "Backup version ${backupData.version} is not supported. Please update the app."
+            )
+        }
+
+        // Restore the data
+        try {
+            restoreBackupData(backupData, clearExisting)
+        } catch (e: Exception) {
+            return ImportResult.Error(
+                "Failed to restore data",
+                "${e::class.simpleName}: ${e.message}"
+            )
+        }
+
+        return ImportResult.Success(
+            notesCount = backupData.notes.size,
+            readingStatsCount = backupData.readingStats.size,
+            readingPlansCount = backupData.readingPlans.size
+        )
+    }
+
+    /**
+     * Legacy method for compatibility - returns boolean.
+     */
+    fun importFromJsonLegacy(jsonString: String, clearExisting: Boolean = false): Boolean {
+        return importFromJson(jsonString, clearExisting) is ImportResult.Success
     }
 
     /**

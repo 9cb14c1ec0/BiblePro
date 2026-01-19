@@ -8,12 +8,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
@@ -42,7 +42,7 @@ fun SearchPane(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.background)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Row(modifier = Modifier.padding(5.dp)) {
             TextField(
@@ -70,19 +70,19 @@ fun SearchPane(
                 Icon(
                     Icons.Default.Close, 
                     contentDescription = "Close",
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
         
-        Divider(color = MaterialTheme.colors.onSurface.copy(alpha = 0.12f), thickness = 1.dp)
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 1.dp)
 
         LazyColumn { 
             items(state.searchResults.size) { index ->
                 SelectionContainer(
                     Modifier
                         .padding(10.dp)
-                        .border(1.dp, color = MaterialTheme.colors.onSurface.copy(alpha = 0.3f), shape = RoundedCornerShape(5.dp))
+                        .border(1.dp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), shape = RoundedCornerShape(5.dp))
                 ) {
                     ClickableText(
                         text = buildAnnotatedString { 
@@ -96,7 +96,7 @@ fun SearchPane(
                             // Open the clicked verse in a new pane
                             // This could be enhanced in future iterations
                         },
-                        style = MaterialTheme.typography.body1.copy(color = MaterialTheme.colors.onSurface),
+                        style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
                         modifier = Modifier.padding(5.dp)
                     )
                 }

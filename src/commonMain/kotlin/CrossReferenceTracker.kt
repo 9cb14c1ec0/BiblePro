@@ -1,10 +1,8 @@
 package bibles
 
 import androidx.compose.runtime.mutableStateMapOf
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.util.Properties
+import storage.PlatformStorage
+import storage.createPlatformStorage
 
 /**
  * A class to track cross-references for verses.
@@ -14,15 +12,16 @@ import java.util.Properties
 class CrossReferenceTracker {
     // Map to store the cross-references for verses
     private val verseCrossReferences = mutableStateMapOf<String, List<String>>()
-    
-    // File to store the cross-references
-    private val crossReferencesFile = File(System.getProperty("user.home"), ".biblepro_crossreferences.properties")
-    
+
+    // Storage for cross-references
+    private val storage: PlatformStorage = createPlatformStorage()
+    private val storageFilename = "crossreferences.properties"
+
     init {
-        // Load cross-references from file if it exists
+        // Load cross-references from storage if it exists
         loadCrossReferences()
     }
-    
+
     /**
      * Sets cross-references for a verse.
      * @param book The book number
@@ -40,7 +39,7 @@ class CrossReferenceTracker {
         }
         saveCrossReferences()
     }
-    
+
     /**
      * Gets the cross-references for a verse.
      * @param book The book number
@@ -52,7 +51,7 @@ class CrossReferenceTracker {
         val key = "$book:$chapter:$verse"
         return verseCrossReferences[key] ?: emptyList()
     }
-    
+
     /**
      * Adds a cross-reference to a verse.
      * @param book The book number
@@ -69,7 +68,7 @@ class CrossReferenceTracker {
             saveCrossReferences()
         }
     }
-    
+
     /**
      * Removes a cross-reference from a verse.
      * @param book The book number
@@ -89,37 +88,42 @@ class CrossReferenceTracker {
             saveCrossReferences()
         }
     }
-    
+
     /**
-     * Loads the cross-references from a file.
+     * Loads the cross-references from storage.
      */
     private fun loadCrossReferences() {
-        if (crossReferencesFile.exists()) {
-            val properties = Properties()
-            FileInputStream(crossReferencesFile).use { properties.load(it) }
-            
+        try {
+            val properties = storage.loadProperties(storageFilename)
+
             properties.forEach { (key, value) ->
-                val references = value.toString().split("|").filter { it.isNotBlank() }
+                val references = value.split("|").filter { it.isNotBlank() }
                 if (references.isNotEmpty()) {
-                    verseCrossReferences[key.toString()] = references
+                    verseCrossReferences[key] = references
                 }
             }
+        } catch (e: Exception) {
+            println("Error loading cross-references: ${e.message}")
         }
     }
-    
+
     /**
-     * Saves the cross-references to a file.
+     * Saves the cross-references to storage.
      */
     private fun saveCrossReferences() {
-        val properties = Properties()
-        
-        verseCrossReferences.forEach { (key, value) ->
-            properties[key] = value.joinToString("|")
+        try {
+            val properties = mutableMapOf<String, String>()
+
+            verseCrossReferences.forEach { (key, value) ->
+                properties[key] = value.joinToString("|")
+            }
+
+            storage.saveProperties(storageFilename, properties)
+        } catch (e: Exception) {
+            println("Error saving cross-references: ${e.message}")
         }
-        
-        FileOutputStream(crossReferencesFile).use { properties.store(it, "Bible Verse Cross References") }
     }
-    
+
     companion object {
         // Singleton instance
         val instance = CrossReferenceTracker()
