@@ -16,10 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.input.pointer.PointerButton
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -33,7 +29,7 @@ import viewmodels.VerseData
  * Clean, performant verse row component.
  * Stateless - receives all data as parameters.
  */
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VerseRow(
     verseData: VerseData,
@@ -76,21 +72,7 @@ fun VerseRow(
                 onClick = onVerseClick,
                 onLongClick = onVerseLongClick
             )
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        if (event.type == PointerEventType.Press) {
-                            // Check for right-click (secondary button)
-                            event.changes.firstOrNull()?.let { change ->
-                                if (event.button == PointerButton.Secondary) {
-                                    onVerseLongClick()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            .onRightClick(onVerseLongClick)
             .background(backgroundColor)
             .padding(vertical = 8.dp, horizontal = 4.dp)
     ) {
