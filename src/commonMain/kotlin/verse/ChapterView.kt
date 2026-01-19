@@ -61,6 +61,17 @@ fun ChapterView(
     var showCrossRefDialog by remember { mutableStateOf(false) }
     var dialogVerse by remember { mutableStateOf<VerseData?>(null) }
 
+    // Keep dialogVerse in sync with state.verses when it changes (e.g., after add/remove cross-reference)
+    LaunchedEffect(state.verses, dialogVerse?.verse) {
+        dialogVerse?.verse?.let { verseNum ->
+            state.verses[verseNum]?.let { updatedVerse ->
+                if (updatedVerse != dialogVerse) {
+                    dialogVerse = updatedVerse
+                }
+            }
+        }
+    }
+
     val bookName = bookList.find { it.id == book }?.text ?: "Book"
     val bibleNamesList = state.bibleNames.toList()
 
@@ -206,13 +217,11 @@ fun ChapterView(
                 },
                 onAdd = { ref ->
                     viewModel.addCrossReference(dialogVerse!!.verse, ref)
-                    // Update dialogVerse to reflect new state
-                    dialogVerse = state.verses[dialogVerse!!.verse]
+                    // dialogVerse will be updated by LaunchedEffect when state.verses changes
                 },
                 onRemove = { ref ->
                     viewModel.removeCrossReference(dialogVerse!!.verse, ref)
-                    // Update dialogVerse to reflect new state
-                    dialogVerse = state.verses[dialogVerse!!.verse]
+                    // dialogVerse will be updated by LaunchedEffect when state.verses changes
                 }
             )
         }
