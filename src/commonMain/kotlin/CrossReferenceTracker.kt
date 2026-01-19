@@ -13,13 +13,17 @@ class CrossReferenceTracker {
     // Map to store the cross-references for verses
     private val verseCrossReferences = mutableStateMapOf<String, List<String>>()
 
-    // Storage for cross-references
-    private val storage: PlatformStorage = createPlatformStorage()
-    private val storageFilename = "crossreferences.properties"
+    // Storage for cross-references (lazy to avoid Android context issues during class loading)
+    private val storage: PlatformStorage by lazy { createPlatformStorage() }
 
-    init {
-        // Load cross-references from storage if it exists
-        loadCrossReferences()
+    // Track whether we've loaded cross-references
+    private var isLoaded = false
+
+    private fun ensureLoaded() {
+        if (!isLoaded) {
+            isLoaded = true
+            loadCrossReferences()
+        }
     }
 
     /**
@@ -30,6 +34,7 @@ class CrossReferenceTracker {
      * @param references The list of cross-reference strings
      */
     fun setCrossReferences(book: Int, chapter: Int, verse: Int, references: List<String>) {
+        ensureLoaded()
         val key = "$book:$chapter:$verse"
         if (references.isEmpty()) {
             // If references list is empty, remove it
@@ -48,6 +53,7 @@ class CrossReferenceTracker {
      * @return The list of cross-reference strings, or an empty list if no cross-references exist
      */
     fun getCrossReferences(book: Int, chapter: Int, verse: Int): List<String> {
+        ensureLoaded()
         val key = "$book:$chapter:$verse"
         return verseCrossReferences[key] ?: emptyList()
     }
@@ -60,6 +66,7 @@ class CrossReferenceTracker {
      * @param reference The cross-reference string
      */
     fun addCrossReference(book: Int, chapter: Int, verse: Int, reference: String) {
+        ensureLoaded()
         val key = "$book:$chapter:$verse"
         val currentReferences = verseCrossReferences[key]?.toMutableList() ?: mutableListOf()
         if (!currentReferences.contains(reference)) {
@@ -77,6 +84,7 @@ class CrossReferenceTracker {
      * @param reference The cross-reference string
      */
     fun removeCrossReference(book: Int, chapter: Int, verse: Int, reference: String) {
+        ensureLoaded()
         val key = "$book:$chapter:$verse"
         val currentReferences = verseCrossReferences[key]?.toMutableList() ?: return
         if (currentReferences.remove(reference)) {
@@ -94,7 +102,7 @@ class CrossReferenceTracker {
      */
     private fun loadCrossReferences() {
         try {
-            val properties = storage.loadProperties(storageFilename)
+            val properties = storage.loadProperties(STORAGE_FILENAME)
 
             properties.forEach { (key, value) ->
                 val references = value.split("|").filter { it.isNotBlank() }
@@ -118,14 +126,16 @@ class CrossReferenceTracker {
                 properties[key] = value.joinToString("|")
             }
 
-            storage.saveProperties(storageFilename, properties)
+            storage.saveProperties(STORAGE_FILENAME, properties)
         } catch (e: Exception) {
             println("Error saving cross-references: ${e.message}")
         }
     }
 
     companion object {
-        // Singleton instance
-        val instance = CrossReferenceTracker()
+        private const val STORAGE_FILENAME = "crossreferences.properties"
+
+        // Singleton instance (lazy to avoid Android context issues during class loading)
+        val instance: CrossReferenceTracker by lazy { CrossReferenceTracker() }
     }
 }

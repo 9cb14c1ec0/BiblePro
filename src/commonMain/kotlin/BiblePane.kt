@@ -43,6 +43,14 @@ fun BiblePane(
     // Local state for lexicon text
     var lexiconText by remember { mutableStateOf("") }
 
+    // Collect ChapterViewModel state for clearing lexicon on navigation
+    val chapterState by chapterViewModel.state.collectAsState()
+
+    // Clear lexicon text when book, chapter, or bibles change
+    LaunchedEffect(chapterState.book, chapterState.chapter, chapterState.bibleNames) {
+        lexiconText = ""
+    }
+
     // Load saved Bible preferences on first composition (only for the first pane)
     val savedBibleIds = remember { if (thisUnit == 1) BiblePreferences.getSelectedBibleIds() else emptyList() }
 
