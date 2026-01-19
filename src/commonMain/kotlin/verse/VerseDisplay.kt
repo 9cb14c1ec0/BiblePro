@@ -15,8 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,10 +42,13 @@ fun VerseRow(
     showPhonetics: Boolean,
     isSelected: Boolean,
     onVerseClick: () -> Unit,
-    onVerseLongClick: () -> Unit,
+    onVerseLongClick: (DpOffset) -> Unit,
     onWordClick: (verse: Int, wordIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Track last pointer position for context menu positioning
+    var lastPointerPosition by remember { mutableStateOf(Offset.Zero) }
+    val density = LocalDensity.current
     // Animate background color for smooth transitions
     val backgroundColor by animateColorAsState(
         targetValue = when {
@@ -68,11 +75,26 @@ fun VerseRow(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        event.changes.firstOrNull()?.let { change ->
+                            lastPointerPosition = change.position
+                        }
+                    }
+                }
+            }
             .combinedClickable(
                 onClick = onVerseClick,
-                onLongClick = onVerseLongClick
+                onLongClick = {
+                    val dpOffset = with(density) {
+                        DpOffset(lastPointerPosition.x.toDp(), lastPointerPosition.y.toDp())
+                    }
+                    onVerseLongClick(dpOffset)
+                }
             )
-            .onRightClick(onVerseLongClick)
+            .onRightClick { offset -> onVerseLongClick(offset) }
             .background(backgroundColor)
             .padding(vertical = 8.dp, horizontal = 4.dp)
     ) {

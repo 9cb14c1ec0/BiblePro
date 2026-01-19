@@ -9,6 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import bibles.Bible
@@ -49,6 +52,10 @@ fun ChapterView(
     var contextMenuVerse by remember { mutableStateOf<Int?>(null) }
     var contextMenuOffset by remember { mutableStateOf(DpOffset.Zero) }
 
+    // Track pointer position at the ChapterView level for accurate context menu positioning
+    var lastPointerPosition by remember { mutableStateOf(Offset.Zero) }
+    val density = LocalDensity.current
+
     // Dialog states
     var showNoteDialog by remember { mutableStateOf(false) }
     var showCrossRefDialog by remember { mutableStateOf(false) }
@@ -57,7 +64,20 @@ fun ChapterView(
     val bookName = bookList.find { it.id == book }?.text ?: "Book"
     val bibleNamesList = state.bibleNames.toList()
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        event.changes.firstOrNull()?.let { change ->
+                            lastPointerPosition = change.position
+                        }
+                    }
+                }
+            }
+    ) {
         if (state.verseCount == 0) {
             // Empty state
             Box(
@@ -100,8 +120,12 @@ fun ChapterView(
                                     viewModel.selectVerse(verseNum)
                                 }
                             },
-                            onVerseLongClick = {
-                                // Show context menu on long click
+                            onVerseLongClick = { _ ->
+                                // Show context menu on long click at pointer position
+                                // Use position tracked at ChapterView level for accurate positioning
+                                contextMenuOffset = with(density) {
+                                    DpOffset(lastPointerPosition.x.toDp(), lastPointerPosition.y.toDp())
+                                }
                                 contextMenuVerse = verseNum
                             },
                             onWordClick = onWordSelected,
