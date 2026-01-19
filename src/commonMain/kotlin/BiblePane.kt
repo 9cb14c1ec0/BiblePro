@@ -173,12 +173,12 @@ fun BiblePane(
                     chapter = state.chapterNum,
                     showPhonetics = phoneticSettings.showPhonetics,
                     phoneticLanguage = phoneticSettings.language,
-                    onWordSelected = { wordIndex ->
+                    onWordSelected = { verse, wordIndex ->
                         // Get lexicon entry using ViewModel
                         lexiconText = viewModel.getLexiconEntry(
                             state.bookId,
                             state.chapterNum,
-                            1, // The ChapterView handles verse internally
+                            verse,
                             wordIndex
                         )
                     },

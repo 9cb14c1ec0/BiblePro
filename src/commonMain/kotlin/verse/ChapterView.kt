@@ -28,7 +28,7 @@ fun ChapterView(
     chapter: Int,
     showPhonetics: Boolean = false,
     phoneticLanguage: PhoneticLanguage = PhoneticLanguage.NONE,
-    onWordSelected: (Int) -> Unit = {},
+    onWordSelected: (verse: Int, wordIndex: Int) -> Unit = { _, _ -> },
     viewModel: ChapterViewModel = remember { ChapterViewModel() },
     modifier: Modifier = Modifier
 ) {

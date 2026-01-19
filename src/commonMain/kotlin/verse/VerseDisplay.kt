@@ -43,7 +43,7 @@ fun VerseRow(
     isSelected: Boolean,
     onVerseClick: () -> Unit,
     onVerseLongClick: () -> Unit,
-    onWordClick: (Int) -> Unit,
+    onWordClick: (verse: Int, wordIndex: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Animate background color for smooth transitions
@@ -133,7 +133,7 @@ fun VerseRow(
                 VerseText(
                     text = annotatedText,
                     isHighlighted = verseData.isHighlighted,
-                    onWordClick = onWordClick
+                    onWordClick = { wordIndex -> onWordClick(verseData.verse, wordIndex) }
                 )
 
                 // Phonetics
@@ -160,7 +160,7 @@ fun VerseRow(
                     VerseText(
                         text = annotatedText,
                         isHighlighted = verseData.isHighlighted,
-                        onWordClick = onWordClick
+                        onWordClick = { wordIndex -> onWordClick(verseData.verse, wordIndex) }
                     )
 
                     // Phonetics for this Bible
