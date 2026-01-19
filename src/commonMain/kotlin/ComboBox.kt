@@ -28,11 +28,12 @@ fun MyComboBox(
     var expanded by remember { mutableStateOf(false) }
     // when no options available, I want ComboBox to be disabled
     val isEnabled by rememberUpdatedState { options.isNotEmpty() }
-    var selectedOptionsList  = remember { mutableStateListOf<Int>() }
 
-    //Initial setup of selected ids
-    selectedIds.forEach{
-        selectedOptionsList.add(it)
+    // Initialize with selectedIds only once
+    val selectedOptionsList = remember(selectedIds) {
+        mutableStateListOf<Int>().apply {
+            addAll(selectedIds)
+        }
     }
 
     ExposedDropdownMenuBox(
@@ -49,8 +50,8 @@ fun MyComboBox(
     ) {
         val selectedSummary = when (selectedOptionsList.size) {
             0 -> ""
-            1 -> options.first { it.id == selectedOptionsList.first() }.text
-            else -> selectedOptionsList.joinToString(", ") { options[it].text }
+            1 -> options.firstOrNull { it.id == selectedOptionsList.first() }?.text ?: ""
+            else -> selectedOptionsList.mapNotNull { id -> options.find { it.id == id }?.text }.joinToString(", ")
         }
         TextField(
             enabled = isEnabled(),
