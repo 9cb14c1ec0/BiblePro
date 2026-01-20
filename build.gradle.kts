@@ -74,7 +74,24 @@ tasks.named("preBuild") {
 android {
     namespace = "com.oss.biblepro"
     compileSdk = 34
-    
+
+    // Signing config for release builds (uses environment variables in CI, or local.properties locally)
+    signingConfigs {
+        create("release") {
+            val keystoreFile = System.getenv("KEYSTORE_FILE")
+            val keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+            val keyAlias = System.getenv("KEY_ALIAS")
+            val keyPassword = System.getenv("KEY_PASSWORD")
+
+            if (keystoreFile != null && keystorePassword != null && keyAlias != null && keyPassword != null) {
+                storeFile = file(keystoreFile)
+                storePassword = keystorePassword
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.oss.biblepro"
         minSdk = 24
@@ -109,6 +126,12 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Use release signing config if available (CI environment)
+            signingConfigs.findByName("release")?.let {
+                if (it.storeFile != null) {
+                    signingConfig = it
+                }
+            }
         }
     }
     

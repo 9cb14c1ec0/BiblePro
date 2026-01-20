@@ -8,6 +8,7 @@ name: Package BiblePro App
 on:
   release:
     types: [published]
+  workflow_dispatch:  # Allows manual triggering for testing
 
 jobs:
   linux:
@@ -102,12 +103,30 @@ jobs:
       
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      
+
+      - name: Decode Keystore
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > ${{ github.workspace }}/release.keystore
+          echo "KEYSTORE_FILE=${{ github.workspace }}/release.keystore" >> $GITHUB_ENV
+
       - name: Build Android Normal APK
-        run: ./gradlew assembleNormal
+        env:
+          KEYSTORE_FILE: ${{ env.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleNormalRelease
 
       - name: Build Android Hidden APK
-        run: ./gradlew assembleHidden
+        env:
+          KEYSTORE_FILE: ${{ env.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleHiddenRelease
       
       - name: Upload Normal APK
         uses: actions/upload-artifact@v4
