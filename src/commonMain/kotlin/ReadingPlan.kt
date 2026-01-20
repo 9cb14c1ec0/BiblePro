@@ -1,12 +1,10 @@
 package bibles
 
 import androidx.compose.runtime.mutableStateMapOf
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import storage.PlatformStorage
+import storage.createPlatformStorage
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.Properties
 
 /**
  * A class to represent a reading plan.
@@ -35,11 +33,12 @@ class ReadingPlanManager {
     // Map to store active reading plans
     private val activePlans = mutableStateMapOf<ReadingPlanType, ReadingPlan>()
 
-    // File to store reading plan data
-    private val plansFile = File(System.getProperty("user.home"), ".biblepro_reading_plans.properties")
+    // Storage for reading plan data
+    private val storage: PlatformStorage = createPlatformStorage()
+    private val storageFilename = "reading_plans.properties"
 
     init {
-        // Load plans from file if it exists
+        // Load plans from storage if it exists
         loadPlans()
     }
 
@@ -290,23 +289,22 @@ class ReadingPlanManager {
     }
 
     /**
-     * Loads reading plans from a file.
+     * Loads reading plans from storage.
      */
     private fun loadPlans() {
-        if (plansFile.exists()) {
-            val properties = Properties()
-            FileInputStream(plansFile).use { properties.load(it) }
+        try {
+            val properties = storage.loadProperties(storageFilename)
 
-            val planTypes = properties.getProperty("plan_types", "")
+            val planTypes = properties["plan_types"] ?: ""
             if (planTypes.isNotBlank()) {
                 planTypes.split(",").forEach { typeStr ->
                     try {
                         val type = ReadingPlanType.valueOf(typeStr)
-                        val name = properties.getProperty("${typeStr}.name", "")
-                        val description = properties.getProperty("${typeStr}.description", "")
-                        val startDateStr = properties.getProperty("${typeStr}.start_date", "")
-                        val currentDayStr = properties.getProperty("${typeStr}.current_day", "1")
-                        val entriesStr = properties.getProperty("${typeStr}.entries", "")
+                        val name = properties["${typeStr}.name"] ?: ""
+                        val description = properties["${typeStr}.description"] ?: ""
+                        val startDateStr = properties["${typeStr}.start_date"] ?: ""
+                        val currentDayStr = properties["${typeStr}.current_day"] ?: "1"
+                        val entriesStr = properties["${typeStr}.entries"] ?: ""
 
                         val startDate = if (startDateStr.isNotBlank()) {
                             LocalDate.parse(startDateStr, DateTimeFormatter.ISO_LOCAL_DATE)
@@ -349,32 +347,38 @@ class ReadingPlanManager {
                     }
                 }
             }
+        } catch (e: Exception) {
+            println("Error loading reading plans: ${e.message}")
         }
     }
 
     /**
-     * Saves reading plans to a file.
+     * Saves reading plans to storage.
      */
     private fun savePlans() {
-        val properties = Properties()
+        try {
+            val properties = mutableMapOf<String, String>()
 
-        // Save plan types
-        properties["plan_types"] = activePlans.keys.joinToString(",") { type -> type.name }
+            // Save plan types
+            properties["plan_types"] = activePlans.keys.joinToString(",") { type -> type.name }
 
-        // Save each plan
-        activePlans.forEach { (type, plan) ->
-            properties["${type.name}.name"] = plan.name
-            properties["${type.name}.description"] = plan.description
-            properties["${type.name}.start_date"] = plan.startDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
-            properties["${type.name}.current_day"] = plan.currentDay.toString()
+            // Save each plan
+            activePlans.forEach { (type, plan) ->
+                properties["${type.name}.name"] = plan.name
+                properties["${type.name}.description"] = plan.description
+                properties["${type.name}.start_date"] = plan.startDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                properties["${type.name}.current_day"] = plan.currentDay.toString()
 
-            // Save entries
-            properties["${type.name}.entries"] = plan.entries.joinToString(";") { entry: ReadingPlanEntry ->
-                "${entry.day}:${entry.bookId}:${entry.chapterStart}:${entry.chapterEnd}"
+                // Save entries
+                properties["${type.name}.entries"] = plan.entries.joinToString(";") { entry: ReadingPlanEntry ->
+                    "${entry.day}:${entry.bookId}:${entry.chapterStart}:${entry.chapterEnd}"
+                }
             }
-        }
 
-        FileOutputStream(plansFile).use { properties.store(it, "Bible Reading Plans") }
+            storage.saveProperties(storageFilename, properties)
+        } catch (e: Exception) {
+            println("Error saving reading plans: ${e.message}")
+        }
     }
 
     companion object {

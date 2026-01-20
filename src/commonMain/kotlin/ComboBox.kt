@@ -1,5 +1,5 @@
 import androidx.compose.foundation.layout.Row
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -14,7 +14,7 @@ interface SelectableOption {
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyComboBox(
     labelText: String,
@@ -63,6 +63,7 @@ fun MyComboBox(
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
             colors = ExposedDropdownMenuDefaults.textFieldColors(),
+            modifier = Modifier.menuAnchor()
         )
         ExposedDropdownMenu(
             expanded = expanded,
@@ -80,6 +81,25 @@ fun MyComboBox(
                 }.value
 
                 DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = checked,
+                                onCheckedChange = { newCheckedState ->
+                                    if (newCheckedState) {
+                                        if(singleSelect)
+                                        {
+                                            selectedOptionsList.clear()
+                                        }
+                                        selectedOptionsList.add(option.id)
+                                    } else {
+                                        selectedOptionsList.remove(option.id)
+                                    }
+                                },
+                            )
+                            Text(text = option.text)
+                        }
+                    },
                     onClick = {
                         if (!checked) {
                             if(singleSelect)
@@ -91,25 +111,7 @@ fun MyComboBox(
                             selectedOptionsList.remove(option.id)
                         }
                     }
-                ){
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = checked,
-                            onCheckedChange = { newCheckedState ->
-                                if (newCheckedState) {
-                                    if(singleSelect)
-                                    {
-                                        selectedOptionsList.clear()
-                                    }
-                                    selectedOptionsList.add(option.id)
-                                } else {
-                                    selectedOptionsList.remove(option.id)
-                                }
-                            },
-                        )
-                        Text(text = option.text)
-                    }
-                }
+                )
             }
         }
     }

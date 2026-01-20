@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import icons.CommonIcons
 import androidx.compose.runtime.Composable
@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * A composable that provides a UI for toggling phonetics display and selecting language.
- * 
+ *
  * @param phoneticSettings The state holder for phonetics settings
  * @param modifier Modifier to be applied to the composable
  */
@@ -46,10 +46,10 @@ fun PhoneticToggle(
             Icon(
                 imageVector = CommonIcons.Language,
                 contentDescription = "Phonetics Settings",
-                tint = if (phoneticSettings.showPhonetics) 
-                    MaterialTheme.colors.primary 
-                else 
-                    MaterialTheme.colors.onSurface
+                tint = if (phoneticSettings.showPhonetics)
+                    MaterialTheme.colorScheme.primary
+                else
+                    MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -57,10 +57,11 @@ fun PhoneticToggle(
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colors.surface)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
         ) {
             // Toggle phonetics display
             DropdownMenuItem(
+                text = { Text(if (phoneticSettings.showPhonetics) "Hide Phonetics" else "Show Phonetics") },
                 onClick = {
                     phoneticSettings.togglePhonetics()
                     if (phoneticSettings.showPhonetics && phoneticSettings.language == PhoneticLanguage.NONE) {
@@ -69,25 +70,26 @@ fun PhoneticToggle(
                     }
                     expanded = false
                 }
-            ) {
-                Text(if (phoneticSettings.showPhonetics) "Hide Phonetics" else "Show Phonetics")
-            }
+            )
 
             // Language selection
             if (phoneticSettings.showPhonetics) {
                 DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = CommonIcons.Language,
+                                contentDescription = "Spanish Phonetics"
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Spanish Phonetics")
+                        }
+                    },
                     onClick = {
                         phoneticSettings.changeLanguage(PhoneticLanguage.SPANISH)
                         expanded = false
                     }
-                ) {
-                    Icon(
-                        imageVector = CommonIcons.Language,
-                        contentDescription = "Spanish Phonetics"
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Spanish Phonetics")
-                }
+                )
 
                 // Add more languages here in the future
             }

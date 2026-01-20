@@ -15,7 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FlashOff
 import androidx.compose.material.icons.filled.FlashOn
@@ -48,10 +48,10 @@ class FlashlightActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         initializeCamera()
         checkCameraPermission()
-        
+
         setContent {
             BibleProTheme {
                 FlashlightScreen(
@@ -73,14 +73,14 @@ class FlashlightActivity : ComponentActivity() {
     }
 
     private fun checkCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
             requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
     private fun toggleFlashlight() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
             checkCameraPermission()
             return
@@ -98,15 +98,15 @@ class FlashlightActivity : ComponentActivity() {
 
     private fun checkHiddenAccess() {
         val currentTime = System.currentTimeMillis()
-        
+
         // Reset tap count if more than 3 seconds have passed
         if (currentTime - lastTapTime > 3000) {
             tapCount = 0
         }
-        
+
         tapCount++
         lastTapTime = currentTime
-        
+
         // Hidden access: 7 quick taps on the title
         if (tapCount >= 7) {
             tapCount = 0
@@ -141,7 +141,7 @@ fun FlashlightScreen(
 ) {
     val backgroundColor = if (isFlashlightOn) Color.White else Color.Black
     val contentColor = if (isFlashlightOn) Color.Black else Color.White
-    
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -162,14 +162,16 @@ fun FlashlightScreen(
                     detectTapGestures { onHiddenAccess() }
                 }
         )
-        
+
         // Flashlight toggle button
         Card(
             modifier = Modifier
                 .size(200.dp),
             shape = CircleShape,
-            elevation = 8.dp,
-            backgroundColor = if (isFlashlightOn) Color.Yellow else Color.Gray
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = if (isFlashlightOn) Color.Yellow else Color.Gray
+            )
         ) {
             IconButton(
                 onClick = onToggleFlashlight,
@@ -183,9 +185,9 @@ fun FlashlightScreen(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         // Status text
         Text(
             text = if (isFlashlightOn) "ON" else "OFF",
@@ -193,9 +195,9 @@ fun FlashlightScreen(
             fontWeight = FontWeight.Medium,
             color = contentColor
         )
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Text(
             text = "Tap to toggle flashlight",
             fontSize = 16.sp,

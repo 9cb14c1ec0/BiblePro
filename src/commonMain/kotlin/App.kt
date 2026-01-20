@@ -1,7 +1,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -75,10 +75,10 @@ private fun MainAppContent(
                         modifier = Modifier
                             .border(
                                 1.dp, 
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                             )
                             .weight(1F)
-                            .background(MaterialTheme.colors.background)
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
                         BiblePane(
                             { m += 1 }, 
@@ -101,10 +101,10 @@ private fun MainAppContent(
                         modifier = Modifier
                             .border(
                                 1.dp, 
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                             )
                             .weight(1F)
-                            .background(MaterialTheme.colors.background)
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
                         SearchPane({ search_count += 1 }, { closed = true}, it, search_count.toFloat())
                     }
@@ -118,10 +118,10 @@ private fun MainAppContent(
                         modifier = Modifier
                             .border(
                                 1.dp, 
-                                MaterialTheme.colors.onSurface.copy(alpha = 0.12f)
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
                             )
                             .weight(1F)
-                            .background(MaterialTheme.colors.background)
+                            .background(MaterialTheme.colorScheme.background)
                     ) {
                         GlobalNotesView({ closed = true}, it, notes_count.toFloat())
                     }

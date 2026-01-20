@@ -1,7 +1,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import icons.CommonIcons
 import androidx.compose.runtime.*
@@ -20,23 +20,23 @@ private fun selectLanguage(languageCode: String) {
 fun MinimalDropdownMenu() {
     var expanded by remember { mutableStateOf(false) }
     val availableLanguages = LanguagePreferences.getAvailableLanguages()
-    
+
     Box(
         modifier = Modifier
             .padding(16.dp)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
-            Icon(CommonIcons.Language, contentDescription = "More options", tint = MaterialTheme.colors.onSurface)
+            Icon(CommonIcons.Language, contentDescription = "More options", tint = MaterialTheme.colorScheme.onSurface)
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colors.surface)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
         ) {
             availableLanguages.forEach { (languageCode, displayName) ->
                 DropdownMenuItem(
-                    content = { Text(displayName) },
-                    onClick = { 
+                    text = { Text(displayName) },
+                    onClick = {
                         selectLanguage(languageCode)
                         expanded = false
                     }
@@ -54,16 +54,16 @@ fun MyDropdownMenu(options: List<ComboOption>, icon: ImageVector, OnSelectionCha
             .padding(16.dp)
     ) {
         IconButton(onClick = { expanded = !expanded }) {
-            Icon(icon, contentDescription = icon.name, tint = MaterialTheme.colors.onSurface)
+            Icon(icon, contentDescription = icon.name, tint = MaterialTheme.colorScheme.onSurface)
         }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(MaterialTheme.colors.surface)
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
-                    content = { Text(option.text) },
+                    text = { Text(option.text) },
                     onClick = {
                         OnSelectionChange(option)
                         expanded = false

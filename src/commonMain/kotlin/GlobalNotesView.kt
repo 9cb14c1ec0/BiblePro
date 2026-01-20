@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
@@ -36,7 +36,7 @@ fun GlobalNotesView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.background)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         // Header with search box and menu
         Row(
@@ -45,11 +45,11 @@ fun GlobalNotesView(
         ) {
             Text(
                 "Global Notes",
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.onSurface,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(end = 8.dp)
             )
-            
+
             TextField(
                 value = state.searchText,
                 placeholder = { Text("Search notes...") },
@@ -59,28 +59,28 @@ fun GlobalNotesView(
                 },
                 modifier = Modifier.weight(1f)
             )
-            
+
             IconButton(onClick = { OnCloseClicked(thisUnit) }) {
                 Icon(
-                    Icons.Default.Close, 
+                    Icons.Default.Close,
                     contentDescription = "Close",
-                    tint = MaterialTheme.colors.onSurface
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
             }
         }
 
-        Divider(color = MaterialTheme.colors.onSurface.copy(alpha = 0.12f), thickness = 1.dp)
+        HorizontalDivider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f), thickness = 1.dp)
 
         // Notes list
-        LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) { 
+        LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             items(state.filteredNotes.size) { index ->
                 val note = state.filteredNotes[index]
-                
+
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
-                    elevation = 2.dp
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         // Note reference
@@ -91,27 +91,27 @@ fun GlobalNotesView(
                             val bookName = bookList.find { it.id == note.book }?.text ?: "Unknown Book"
                             Text(
                                 "$bookName ${note.chapter}:${note.verse}",
-                                style = MaterialTheme.typography.subtitle1,
+                                style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colors.primary
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
-                        
+
                         Spacer(modifier = Modifier.height(8.dp))
-                        
+
                         // Note content
                         SelectionContainer {
                             Text(
                                 note.text,
-                                style = MaterialTheme.typography.body1,
-                                color = MaterialTheme.colors.onSurface,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
                 }
             }
-            
+
             // Show message if no notes found
             if (state.filteredNotes.isEmpty()) {
                 item {
@@ -122,12 +122,12 @@ fun GlobalNotesView(
                         if (state.allNotes.isEmpty()) {
                             Text(
                                 "No notes have been created yet.",
-                                color = MaterialTheme.colors.onSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         } else {
                             Text(
                                 "No notes match your search.",
-                                color = MaterialTheme.colors.onSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }

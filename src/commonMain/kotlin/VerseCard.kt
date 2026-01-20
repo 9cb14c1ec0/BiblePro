@@ -6,7 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import icons.CommonIcons
 import androidx.compose.runtime.*
@@ -156,13 +156,13 @@ private fun NoteDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colors.surface,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     "Note for $bookName $chapter:$verse",
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -181,7 +181,7 @@ private fun NoteDialog(
                 ) {
                     Button(
                         onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
                         modifier = Modifier.padding(end = 8.dp)
                     ) {
                         Text("Cancel")
@@ -217,11 +217,11 @@ private fun CompactVerseCard(
             .shadow(elevation = 1.dp, shape = RoundedCornerShape(6.dp))
             .border(
                 width = if (state.isRead) 2.dp else 0.5.dp,
-                color = if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.5f) else MaterialTheme.colors.primary.copy(alpha = 0.2f),
+                color = if (state.isRead) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                 shape = RoundedCornerShape(6.dp)
             )
             .background(
-                MaterialTheme.colors.surface, 
+                MaterialTheme.colorScheme.surface, 
                 RoundedCornerShape(6.dp)
             )
             .clickable { onMarkAsRead() }
@@ -229,10 +229,10 @@ private fun CompactVerseCard(
         // Smaller verse number with read indicator
         Text(
             state.verse.toString(),
-            style = MaterialTheme.typography.caption.copy(
+            style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = if (state.isRead) FontWeight.ExtraBold else FontWeight.Bold
             ),
-            color = if (state.isRead) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(alpha = 0.7f),
+            color = if (state.isRead) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
             modifier = Modifier
                 .padding(horizontal = 8.dp, vertical = 6.dp)
                 .align(Alignment.CenterVertically)
@@ -242,7 +242,7 @@ private fun CompactVerseCard(
         Icon(
             imageVector = CommonIcons.Note,
             contentDescription = if (state.hasNote) "Edit note" else "Add note",
-            tint = if (state.hasNote) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+            tint = if (state.hasNote) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
             modifier = Modifier
                 .size(24.dp)
                 .align(Alignment.CenterVertically)
@@ -254,7 +254,7 @@ private fun CompactVerseCard(
         Icon(
             imageVector = CommonIcons.Highlight,
             contentDescription = if (state.isHighlighted) "Disable highlighting" else "Enable highlighting",
-            tint = if (state.isHighlighted) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+            tint = if (state.isHighlighted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
             modifier = Modifier
                 .size(24.dp)
                 .align(Alignment.CenterVertically)
@@ -266,7 +266,7 @@ private fun CompactVerseCard(
         Icon(
             imageVector = CommonIcons.Link,
             contentDescription = "Cross References",
-            tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+            tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
             modifier = Modifier
                 .size(24.dp)
                 .align(Alignment.CenterVertically)
@@ -297,15 +297,15 @@ private fun CompactVerseCard(
                             .padding(vertical = 6.dp, horizontal = 4.dp)
                             .background(
                                 when {
-                                    state.isHighlighted -> MaterialTheme.colors.secondary.copy(alpha = 0.15f)
-                                    else -> MaterialTheme.colors.background
+                                    state.isHighlighted -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
+                                    else -> MaterialTheme.colorScheme.background
                                 }
                             ),
-                        style = MaterialTheme.typography.body1.copy(
+                        style = MaterialTheme.typography.bodyLarge.copy(
                             fontFamily = FontFamily.Serif,
                             lineHeight = 22.sp,
                             letterSpacing = 0.sp,
-                            color = MaterialTheme.colors.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -314,15 +314,15 @@ private fun CompactVerseCard(
                 if (state.showPhonetics && state.phoneticTexts.containsKey(bibleName)) {
                     Text(
                         text = "Pronunciation: ${state.phoneticTexts[bibleName]}",
-                        style = MaterialTheme.typography.caption.copy(
+                        style = MaterialTheme.typography.labelSmall.copy(
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                             fontWeight = FontWeight.Normal,
                             fontSize = 10.sp
                         ),
-                        color = MaterialTheme.colors.primary.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                         modifier = Modifier
                             .padding(horizontal = 4.dp, vertical = 2.dp)
-                            .background(MaterialTheme.colors.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
                             .padding(4.dp)
                             .fillMaxWidth()
                     )
@@ -332,13 +332,13 @@ private fun CompactVerseCard(
                 if (state.hasNote) {
                     Text(
                         text = state.noteText,
-                        style = MaterialTheme.typography.caption.copy(
+                        style = MaterialTheme.typography.labelSmall.copy(
                             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         ),
-                        color = MaterialTheme.colors.primary.copy(alpha = 0.7f),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                         modifier = Modifier
                             .padding(horizontal = 8.dp, vertical = 4.dp)
-                            .background(MaterialTheme.colors.primary.copy(alpha = 0.05f))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
                             .padding(4.dp)
                     )
                 }
@@ -358,18 +358,18 @@ private fun CrossReferenceSection(
     Column(
         modifier = Modifier
             .padding(8.dp)
-            .background(MaterialTheme.colors.surface, RoundedCornerShape(8.dp))
-            .border(1.dp, MaterialTheme.colors.primary.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
             .padding(8.dp)
     ) {
         Text(
             "Cross References",
-            style = MaterialTheme.typography.subtitle1,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 4.dp)
         )
 
-        Divider(modifier = Modifier.padding(vertical = 4.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
         references.forEach { reference ->
             Row(
@@ -381,8 +381,8 @@ private fun CrossReferenceSection(
             ) {
                 Text(
                     reference,
-                    style = MaterialTheme.typography.body2,
-                    color = MaterialTheme.colors.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -392,8 +392,8 @@ private fun CrossReferenceSection(
                 ) {
                     Text(
                         "×",
-                        style = MaterialTheme.typography.h6,
-                        color = MaterialTheme.colors.error
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
             }
@@ -418,11 +418,11 @@ private fun ExpandedVerseCard(
             .shadow(elevation = 2.dp, shape = RoundedCornerShape(8.dp))
             .border(
                 width = if (state.isRead) 2.dp else 1.dp,
-                color = if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.6f) else MaterialTheme.colors.primary.copy(alpha = 0.3f),
+                color = if (state.isRead) MaterialTheme.colorScheme.primary.copy(alpha = 0.6f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(8.dp)
             )
             .background(
-                MaterialTheme.colors.surface, 
+                MaterialTheme.colorScheme.surface, 
                 RoundedCornerShape(8.dp)
             )
             .clickable { onMarkAsRead() }
@@ -437,24 +437,24 @@ private fun ExpandedVerseCard(
                 modifier = Modifier
                     .size(36.dp)
                     .background(
-                        if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.15f) 
-                        else MaterialTheme.colors.primary.copy(alpha = 0.1f), 
+                        if (state.isRead) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) 
+                        else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), 
                         CircleShape
                     )
                     .border(
                         width = if (state.isRead) 1.25.dp else 1.dp,
-                        color = if (state.isRead) MaterialTheme.colors.primary.copy(alpha = 0.5f) 
-                               else MaterialTheme.colors.primary.copy(alpha = 0.3f), 
+                        color = if (state.isRead) MaterialTheme.colorScheme.primary.copy(alpha = 0.5f) 
+                               else MaterialTheme.colorScheme.primary.copy(alpha = 0.3f), 
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     state.verse.toString(),
-                    style = MaterialTheme.typography.caption.copy(
+                    style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = if (state.isRead) FontWeight.ExtraBold else FontWeight.Bold
                     ),
-                    color = if (state.isRead) MaterialTheme.colors.primary else MaterialTheme.colors.primary.copy(alpha = 0.7f)
+                    color = if (state.isRead) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                 )
             }
 
@@ -462,7 +462,7 @@ private fun ExpandedVerseCard(
             Icon(
                 imageVector = CommonIcons.Note,
                 contentDescription = if (state.hasNote) "Edit note" else "Add note",
-                tint = if (state.hasNote) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+                tint = if (state.hasNote) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                 modifier = Modifier
                     .size(28.dp)
                     .padding(start = 4.dp)
@@ -473,7 +473,7 @@ private fun ExpandedVerseCard(
             Icon(
                 imageVector = CommonIcons.Highlight,
                 contentDescription = if (state.isHighlighted) "Disable highlighting" else "Enable highlighting",
-                tint = if (state.isHighlighted) MaterialTheme.colors.secondary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+                tint = if (state.isHighlighted) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                 modifier = Modifier
                     .size(28.dp)
                     .padding(start = 4.dp)
@@ -484,7 +484,7 @@ private fun ExpandedVerseCard(
             Icon(
                 imageVector = CommonIcons.Link,
                 contentDescription = "Cross References",
-                tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colors.primary else MaterialTheme.colors.onSurface.copy(alpha = 0.3f),
+                tint = if (state.crossReferences.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f),
                 modifier = Modifier
                     .size(28.dp)
                     .padding(start = 4.dp)
@@ -501,17 +501,17 @@ private fun ExpandedVerseCard(
                 if (annotatedText != null) {
                     // Add divider between translations if not the first one
                     if (counter > 0) {
-                        Divider(
+                        HorizontalDivider(
                             modifier = Modifier.padding(vertical = 4.dp),
-                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f)
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f)
                         )
                     }
 
                     // Bible version label
                     Text(
                         bibleName,
-                        style = MaterialTheme.typography.overline,
-                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.6f),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                         modifier = Modifier.padding(bottom = 2.dp, top = if (counter > 0) 4.dp else 0.dp)
                     )
 
@@ -532,19 +532,19 @@ private fun ExpandedVerseCard(
                                 .background(
                                     // Apply highlighting if enabled, otherwise use subtle pastel colors
                                     when {
-                                        state.isHighlighted -> MaterialTheme.colors.secondary.copy(alpha = 0.15f)
+                                        state.isHighlighted -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
                                         else -> when (counter % 3) {
-                                            0 -> MaterialTheme.colors.primary.copy(alpha = 0.05f)
-                                            1 -> MaterialTheme.colors.secondary.copy(alpha = 0.05f)
-                                            else -> MaterialTheme.colors.background
+                                            0 -> MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
+                                            1 -> MaterialTheme.colorScheme.secondary.copy(alpha = 0.05f)
+                                            else -> MaterialTheme.colorScheme.background
                                         }
                                     }
                                 ),
-                            style = MaterialTheme.typography.body1.copy(
+                            style = MaterialTheme.typography.bodyLarge.copy(
                                 fontFamily = FontFamily.Serif,
                                 lineHeight = 24.sp,
                                 letterSpacing = 0.sp,
-                                color = MaterialTheme.colors.onSurface
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }
@@ -553,14 +553,14 @@ private fun ExpandedVerseCard(
                     if (state.showPhonetics && state.phoneticTexts.containsKey(bibleName)) {
                         Text(
                             text = "Pronunciation: ${state.phoneticTexts[bibleName]}",
-                            style = MaterialTheme.typography.caption.copy(
+                            style = MaterialTheme.typography.labelSmall.copy(
                                 fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                 fontWeight = FontWeight.Normal
                             ),
-                            color = MaterialTheme.colors.primary.copy(alpha = 0.7f),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
                             modifier = Modifier
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
-                                .background(MaterialTheme.colors.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
                                 .padding(8.dp)
                                 .fillMaxWidth()
                         )
@@ -572,20 +572,20 @@ private fun ExpandedVerseCard(
 
             // Display note if it exists (after all translations)
             if (state.hasNote) {
-                Divider(
+                HorizontalDivider(
                     modifier = Modifier.padding(vertical = 4.dp),
-                    color = MaterialTheme.colors.primary.copy(alpha = 0.2f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                 )
                 Text(
                     text = "Note: ${state.noteText}",
-                    style = MaterialTheme.typography.caption.copy(
+                    style = MaterialTheme.typography.labelSmall.copy(
                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                         fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colors.primary.copy(alpha = 0.8f),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
                     modifier = Modifier
                         .padding(horizontal = 8.dp, vertical = 4.dp)
-                        .background(MaterialTheme.colors.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f), RoundedCornerShape(4.dp))
                         .padding(8.dp)
                 )
             }

@@ -1,7 +1,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import icons.CommonIcons
@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import backup.BackupManager
+import backup.ImportResult
 import backup.PlatformFilePicker
 import locale.L
 import phonetics.PhoneticLanguage
@@ -38,7 +39,7 @@ fun SettingsMenu(
             Icon(
                 CommonIcons.Settings,
                 contentDescription = L.current.l("Settings"),
-                tint = MaterialTheme.colors.onSurface
+                tint = MaterialTheme.colorScheme.onSurface
             )
         }
 
@@ -46,174 +47,187 @@ fun SettingsMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier
-                .background(MaterialTheme.colors.surface)
+                .background(MaterialTheme.colorScheme.surface)
                 .width(IntrinsicSize.Min)
                 .widthIn(min = 220.dp)
         ) {
             // Title
             Text(
                 L.current.l("Settings"),
-                style = MaterialTheme.typography.h6,
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(8.dp)
             )
 
-            Divider()
+            HorizontalDivider()
 
             // Theme section
             if (themeState != null) {
                 Text(
                     L.current.l("Appearance"),
-                    style = MaterialTheme.typography.subtitle2,
+                    style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 8.dp, top = 8.dp, end = 8.dp, bottom = 4.dp)
                 )
 
                 // Light Mode
                 DropdownMenuItem(
-                    onClick = {
-                        themeState.themeMode = ThemeMode.LIGHT
-                    }
-                ) {
-                    Icon(
-                        imageVector = CommonIcons.LightMode,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp),
-                        tint = if (themeState.themeMode == ThemeMode.LIGHT)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                    Text(
-                        L.current.l("Light Mode"),
-                        color = if (themeState.themeMode == ThemeMode.LIGHT)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                }
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = CommonIcons.LightMode,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 8.dp),
+                                tint = if (themeState.themeMode == ThemeMode.LIGHT)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                L.current.l("Light Mode"),
+                                color = if (themeState.themeMode == ThemeMode.LIGHT)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    onClick = { themeState.themeMode = ThemeMode.LIGHT }
+                )
 
                 // Dark Mode
                 DropdownMenuItem(
-                    onClick = {
-                        themeState.themeMode = ThemeMode.DARK
-                    }
-                ) {
-                    Icon(
-                        imageVector = CommonIcons.DarkMode,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp),
-                        tint = if (themeState.themeMode == ThemeMode.DARK)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                    Text(
-                        L.current.l("Dark Mode"),
-                        color = if (themeState.themeMode == ThemeMode.DARK)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                }
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = CommonIcons.DarkMode,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 8.dp),
+                                tint = if (themeState.themeMode == ThemeMode.DARK)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                L.current.l("Dark Mode"),
+                                color = if (themeState.themeMode == ThemeMode.DARK)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    onClick = { themeState.themeMode = ThemeMode.DARK }
+                )
 
                 // System Default
                 DropdownMenuItem(
-                    onClick = {
-                        themeState.themeMode = ThemeMode.SYSTEM
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp),
-                        tint = if (themeState.themeMode == ThemeMode.SYSTEM)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                    Text(
-                        L.current.l("System Default"),
-                        color = if (themeState.themeMode == ThemeMode.SYSTEM)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                }
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Settings,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 8.dp),
+                                tint = if (themeState.themeMode == ThemeMode.SYSTEM)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                L.current.l("System Default"),
+                                color = if (themeState.themeMode == ThemeMode.SYSTEM)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    },
+                    onClick = { themeState.themeMode = ThemeMode.SYSTEM }
+                )
 
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
 
             // Phonetics section
             if (phoneticSettings != null) {
                 Text(
                     L.current.l("Phonetics"),
-                    style = MaterialTheme.typography.subtitle2,
+                    style = MaterialTheme.typography.titleSmall,
                     modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
                 )
 
                 // Toggle phonetics
                 DropdownMenuItem(
+                    text = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = CommonIcons.Language,
+                                contentDescription = null,
+                                modifier = Modifier.padding(end = 8.dp),
+                                tint = if (phoneticSettings.showPhonetics)
+                                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                if (phoneticSettings.showPhonetics) L.current.l("Hide Phonetics") else L.current.l("Show Phonetics")
+                            )
+                        }
+                    },
                     onClick = {
                         phoneticSettings.togglePhonetics()
                         if (phoneticSettings.showPhonetics && phoneticSettings.language == PhoneticLanguage.NONE) {
                             phoneticSettings.changeLanguage(PhoneticLanguage.SPANISH)
                         }
                     }
-                ) {
-                    Icon(
-                        imageVector = CommonIcons.Language,
-                        contentDescription = null,
-                        modifier = Modifier.padding(end = 8.dp),
-                        tint = if (phoneticSettings.showPhonetics)
-                            MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                    )
-                    Text(
-                        if (phoneticSettings.showPhonetics) L.current.l("Hide Phonetics") else L.current.l("Show Phonetics")
-                    )
-                }
+                )
 
                 // Language selection (only show if phonetics are enabled)
                 if (phoneticSettings.showPhonetics) {
                     DropdownMenuItem(
-                        onClick = {
-                            phoneticSettings.changeLanguage(PhoneticLanguage.SPANISH)
-                        }
-                    ) {
-                        Spacer(modifier = Modifier.width(32.dp))
-                        Text(
-                            L.current.l("Spanish Phonetics"),
-                            color = if (phoneticSettings.language == PhoneticLanguage.SPANISH)
-                                MaterialTheme.colors.primary else MaterialTheme.colors.onSurface
-                        )
-                    }
+                        text = {
+                            Row {
+                                Spacer(modifier = Modifier.width(32.dp))
+                                Text(
+                                    L.current.l("Spanish Phonetics"),
+                                    color = if (phoneticSettings.language == PhoneticLanguage.SPANISH)
+                                        MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        },
+                        onClick = { phoneticSettings.changeLanguage(PhoneticLanguage.SPANISH) }
+                    )
                 }
 
-                Divider(modifier = Modifier.padding(vertical = 4.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
             }
 
             // Backup & Restore section
             Text(
                 L.current.l("Backup & Restore"),
-                style = MaterialTheme.typography.subtitle2,
+                style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(start = 8.dp, top = 4.dp, end = 8.dp, bottom = 4.dp)
             )
 
             // Export Data
             DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.Upload,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(L.current.l("Export Data"))
+                    }
+                },
                 onClick = {
                     expanded = false
                     showExportDialog = true
                 }
-            ) {
-                Icon(
-                    Icons.Filled.Upload,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(L.current.l("Export Data"))
-            }
+            )
 
             // Import Data
             DropdownMenuItem(
+                text = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.Download,
+                            contentDescription = null,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(L.current.l("Import Data"))
+                    }
+                },
                 onClick = {
                     expanded = false
                     showImportDialog = true
                 }
-            ) {
-                Icon(
-                    Icons.Filled.Download,
-                    contentDescription = null,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-                Text(L.current.l("Import Data"))
-            }
+            )
         }
     }
 
@@ -266,19 +280,19 @@ private fun ExportDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colors.surface,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     L.current.l("Export Data"),
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Text(
                     L.current.l("This will export your notes, reading progress, and reading plans to a JSON file."),
-                    style = MaterialTheme.typography.body1,
+                    style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
@@ -332,19 +346,19 @@ private fun ImportDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colors.surface,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.padding(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     L.current.l("Import Data"),
-                    style = MaterialTheme.typography.h6,
+                    style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 16.dp)
                 )
 
                 Text(
                     L.current.l("This will import notes, reading progress, and reading plans from a backup file."),
-                    style = MaterialTheme.typography.body1,
+                    style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
@@ -359,15 +373,15 @@ private fun ImportDialog(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         L.current.l("Replace existing data"),
-                        style = MaterialTheme.typography.body2
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
 
                 if (replaceExisting) {
                     Text(
                         L.current.l("Warning: This will delete all existing notes, reading progress, and reading plans before importing."),
-                        style = MaterialTheme.typography.caption,
-                        color = MaterialTheme.colors.error,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
                 }
@@ -388,17 +402,33 @@ private fun ImportDialog(
                                 if (path != null) {
                                     val jsonContent = filePicker.readFile(path)
                                     if (jsonContent != null) {
-                                        val success = BackupManager.importFromJson(jsonContent, replaceExisting)
-                                        if (success) {
-                                            onImport(true, L.current.l("Data imported successfully"))
-                                        } else {
-                                            onImport(false, L.current.l("Failed to parse backup file"))
+                                        when (val result = BackupManager.importFromJson(jsonContent, replaceExisting)) {
+                                            is ImportResult.Success -> {
+                                                val summary = buildString {
+                                                    append(L.current.l("Data imported successfully"))
+                                                    append("\n\n")
+                                                    append("${L.current.l("Notes")}: ${result.notesCount}\n")
+                                                    append("${L.current.l("Read chapters")}: ${result.readingStatsCount}\n")
+                                                    append("${L.current.l("Reading plans")}: ${result.readingPlansCount}")
+                                                }
+                                                onImport(true, summary)
+                                            }
+                                            is ImportResult.Error -> {
+                                                val errorMsg = buildString {
+                                                    append(result.message)
+                                                    if (result.details != null) {
+                                                        append("\n\n")
+                                                        append(result.details)
+                                                    }
+                                                }
+                                                onImport(false, errorMsg)
+                                            }
                                         }
                                     } else {
-                                        onImport(false, L.current.l("Failed to read backup file"))
+                                        onImport(false, L.current.l("Failed to read backup file") + "\n\n" + L.current.l("The file may be corrupted or inaccessible."))
                                     }
                                 } else {
-                                    onImport(false, L.current.l("No backup file found"))
+                                    onDismiss()
                                 }
                             }
                         }
@@ -423,7 +453,7 @@ private fun ResultDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colors.surface,
+            color = MaterialTheme.colorScheme.surface,
             modifier = Modifier.padding(16.dp)
         ) {
             Column(
@@ -433,7 +463,7 @@ private fun ResultDialog(
                 Icon(
                     if (isSuccess) Icons.Filled.CheckCircle else Icons.Filled.Error,
                     contentDescription = null,
-                    tint = if (isSuccess) MaterialTheme.colors.primary else MaterialTheme.colors.error,
+                    tint = if (isSuccess) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
                     modifier = Modifier.size(48.dp)
                 )
 
@@ -441,14 +471,14 @@ private fun ResultDialog(
 
                 Text(
                     if (isSuccess) L.current.l("Success") else L.current.l("Error"),
-                    style = MaterialTheme.typography.h6
+                    style = MaterialTheme.typography.titleLarge
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     message,
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyLarge
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

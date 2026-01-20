@@ -2,7 +2,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
@@ -47,7 +47,7 @@ fun LanguageSelectionScreen(
             text = "Choose your preferred language for BiblePro",
             fontSize = 16.sp,
             textAlign = TextAlign.Center,
-            color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             modifier = Modifier.padding(bottom = 32.dp)
         )
         
@@ -56,7 +56,7 @@ fun LanguageSelectionScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
-            elevation = 4.dp
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             LazyColumn(
                 modifier = Modifier.padding(8.dp)
@@ -85,7 +85,7 @@ fun LanguageSelectionScreen(
                 .fillMaxWidth()
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.primary
+                containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
             Text(
@@ -121,7 +121,7 @@ private fun LanguageItem(
             Icon(
                 imageVector = Icons.Default.Check,
                 contentDescription = "Selected",
-                tint = MaterialTheme.colors.primary
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
