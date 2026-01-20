@@ -90,12 +90,39 @@ jobs:
       
       - name: Make gradlew executable
         run: chmod +x ./gradlew
-      
-      - name: Build Android Debug APK
-        run: ./gradlew assembleDebug
-      
-      - name: Upload Debug APK
+
+      - name: Decode Keystore
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > ${{ github.workspace }}/release.keystore
+          echo "KEYSTORE_FILE=${{ github.workspace }}/release.keystore" >> $GITHUB_ENV
+
+      - name: Build Android Normal APK
+        env:
+          KEYSTORE_FILE: ${{ env.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleNormalRelease
+
+      - name: Build Android Hidden APK
+        env:
+          KEYSTORE_FILE: ${{ env.KEYSTORE_FILE }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleHiddenRelease
+
+      - name: Upload Normal APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-debug-apk
-          path: build/outputs/apk/normal/debug/*.apk
+          name: android-normal-release-apk
+          path: build/outputs/apk/normal/release/*.apk
+
+      - name: Upload Hidden APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-hidden-release-apk
+          path: build/outputs/apk/hidden/release/*.apk
