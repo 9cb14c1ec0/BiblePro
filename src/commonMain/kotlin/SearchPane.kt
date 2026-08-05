@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import bibles.loaded_bibles
+import kotlinx.coroutines.delay
 import viewmodels.SearchViewModel
 // Import from correct locations
 import ComboOption
@@ -31,13 +32,45 @@ import MyDropdownMenu
 @Composable
 fun SearchPane(
     OnAddClicked: () -> Unit,
-    OnCloseClicked: (unit: Int) -> Unit,
-    thisUnit: Int,
+    OnCloseClicked: () -> Unit,
     totalUnits: Float,
+    initialSearchText: String = "",
+    onSearchTextChanged: (String) -> Unit = {},
     viewModel: SearchViewModel = remember { SearchViewModel() }
 ) {
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
+
+    // Guards against reporting empty state before the restore has been applied
+    var restored by remember { mutableStateOf(false) }
+
+    // Re-run the saved search once the Bibles finish loading in the Bible panes
+    LaunchedEffect(Unit) {
+        if (initialSearchText.isNotBlank()) {
+            // Show the saved query straight away, then re-run it once the Bible
+            // panes have finished loading their translations
+            viewModel.updateSearchText(initialSearchText, loaded_bibles)
+            var waited = 0
+            while (loaded_bibles.isEmpty() && waited < 10_000 &&
+                viewModel.state.value.searchText == initialSearchText
+            ) {
+                delay(250)
+                waited += 250
+            }
+            // Don't clobber anything the user has typed in the meantime
+            if (viewModel.state.value.searchText == initialSearchText) {
+                viewModel.updateSearchText(initialSearchText, loaded_bibles)
+            }
+        }
+        restored = true
+    }
+
+    // Report the search text upwards so it can be persisted
+    LaunchedEffect(restored, state.searchText) {
+        if (restored) {
+            onSearchTextChanged(state.searchText)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -66,7 +99,7 @@ fun SearchPane(
                     }
                 }
             }
-            IconButton(onClick = { OnCloseClicked(thisUnit) }) {
+            IconButton(onClick = { OnCloseClicked() }) {
                 Icon(
                     Icons.Default.Close, 
                     contentDescription = "Close",

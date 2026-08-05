@@ -28,7 +28,9 @@ fun DropdownMenuBox(
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(initial_text) }
+    // Keyed on initial_text so the field follows changes made outside this
+    // component (e.g. a restored session), not just the first value it saw
+    var selectedText by remember(initial_text) { mutableStateOf(initial_text) }
 
     var textfieldSize by remember { mutableStateOf(Size.Zero)}
 

@@ -25,13 +25,32 @@ import viewmodels.GlobalNotesViewModel
  */
 @Composable
 fun GlobalNotesView(
-    OnCloseClicked: (unit: Int) -> Unit,
-    thisUnit: Int,
+    OnCloseClicked: () -> Unit,
     totalUnits: Float,
+    initialSearchText: String = "",
+    onSearchTextChanged: (String) -> Unit = {},
     viewModel: GlobalNotesViewModel = remember { GlobalNotesViewModel() }
 ) {
     // Collect state from ViewModel
     val state by viewModel.state.collectAsState()
+
+    // Guards against reporting empty state before the restore has been applied
+    var restored by remember { mutableStateOf(false) }
+
+    // Restore the saved filter
+    LaunchedEffect(Unit) {
+        if (initialSearchText.isNotBlank()) {
+            viewModel.updateSearchText(initialSearchText)
+        }
+        restored = true
+    }
+
+    // Report the filter text upwards so it can be persisted
+    LaunchedEffect(restored, state.searchText) {
+        if (restored) {
+            onSearchTextChanged(state.searchText)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -60,7 +79,7 @@ fun GlobalNotesView(
                 modifier = Modifier.weight(1f)
             )
 
-            IconButton(onClick = { OnCloseClicked(thisUnit) }) {
+            IconButton(onClick = { OnCloseClicked() }) {
                 Icon(
                     Icons.Default.Close,
                     contentDescription = "Close",
