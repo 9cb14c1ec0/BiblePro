@@ -25,6 +25,7 @@ fun DropdownMenuBox(
     suggestions: List<String>,
     onSelection: (String) -> Unit,
     filterOptions: Boolean = true,
+    readOnly: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -43,6 +44,7 @@ fun DropdownMenuBox(
     Box() {
         OutlinedTextField(
             value = selectedText,
+            readOnly = readOnly,
             onValueChange = {
                 selectedText = it
                 if(suggestions.contains(it))
@@ -75,6 +77,11 @@ fun DropdownMenuBox(
                     tint = MaterialTheme.colorScheme.onSurface)
             }
         )
+        if (readOnly) {
+            // A read-only text field still swallows clicks, so cover it with a
+            // transparent hit target that opens the list instead
+            Box(Modifier.matchParentSize().clickable { expanded = !expanded })
+        }
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -82,7 +89,7 @@ fun DropdownMenuBox(
                 .width(with(LocalDensity.current){textfieldSize.width.toDp()})
                 .background(MaterialTheme.colorScheme.surface)
         ) {
-            suggestions.filter { !filterOptions or it.startsWith(selectedText) }.forEachIndexed { index, s ->
+            suggestions.filter { !filterOptions or readOnly or it.startsWith(selectedText) }.forEachIndexed { index, s ->
                 if (index > 0) {
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
