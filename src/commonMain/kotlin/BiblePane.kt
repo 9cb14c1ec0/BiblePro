@@ -25,11 +25,14 @@ import viewmodels.ChapterViewModel
 @Composable
 fun BiblePane(
     OnAddClicked: () -> Unit,
-    OnCloseClicked: (unit: Int) -> Unit,
+    OnCloseClicked: () -> Unit,
     OnNewSearch: () -> Unit,
     OnGlobalNotesClicked: () -> Unit = {},
-    thisUnit: Int,
     totalUnits: Float,
+    initialBibleIds: List<Int> = emptyList(),
+    initialBookId: Int = 40,
+    initialChapterNum: Int = 1,
+    onSessionChanged: (bibleIds: List<Int>, bookId: Int, chapterNum: Int) -> Unit = { _, _, _ -> },
     viewModel: BibleViewModel = remember { BibleViewModel() },
     themeState: ThemeState? = null,
     phoneticSettings: PhoneticSettings = rememberPhoneticSettings()
@@ -51,18 +54,30 @@ fun BiblePane(
         lexiconText = ""
     }
 
-    // Load saved Bible preferences on first composition (only for the first pane)
-    val savedBibleIds = remember { if (thisUnit == 1) BiblePreferences.getSelectedBibleIds() else emptyList() }
+    // Translations selected in this pane, seeded from the restored session
+    val savedBibleIds = remember { initialBibleIds }
+    var selectedBibleIds by remember { mutableStateOf(initialBibleIds) }
 
-    // Auto-load saved Bibles on first composition and initialize book/chapter
+    // Guards against reporting default state before the restore has been applied
+    var restored by remember { mutableStateOf(false) }
+
+    // Restore the pane's Bibles, book and chapter on first composition
     LaunchedEffect(Unit) {
-        if (thisUnit == 1 && savedBibleIds.isNotEmpty()) {
-            val savedBibleNames = bibleList.filter { it.id in savedBibleIds }.map { it.text }
-            if (savedBibleNames.isNotEmpty()) {
-                viewModel.loadBibles(savedBibleNames)
-                // Initialize the chapters list for the default book
-                viewModel.selectBook(viewModel.state.value.bookId)
-            }
+        val savedBibleNames = bibleList.filter { it.id in savedBibleIds }.map { it.text }
+        if (savedBibleNames.isNotEmpty()) {
+            viewModel.loadBibles(savedBibleNames)
+        }
+        // selectBook also populates the chapter list, and resets the chapter,
+        // so the saved chapter has to be applied afterwards
+        viewModel.selectBook(initialBookId)
+        viewModel.selectChapter(initialChapterNum)
+        restored = true
+    }
+
+    // Report the pane's state upwards so it can be persisted
+    LaunchedEffect(restored, selectedBibleIds, state.bookId, state.chapterNum) {
+        if (restored) {
+            onSessionChanged(selectedBibleIds, state.bookId, state.chapterNum)
         }
     }
 
@@ -78,8 +93,12 @@ fun BiblePane(
                 onOptionsChosen = { selectedOptions ->
                     // Load selected Bibles using ViewModel
                     viewModel.loadBibles(selectedOptions.map { it.text })
+                    selectedBibleIds = selectedOptions.map { it.id }
+                    // Remember the choice as the default for newly opened panes
+                    BiblePreferences.setSelectedBibleIds(selectedBibleIds)
                 },
                 modifier = Modifier.weight(1f),
+                selectedIds = savedBibleIds,
                 singleSelect = false
             )
             MinimalDropdownMenu()
@@ -102,7 +121,7 @@ fun BiblePane(
                     Icons.Filled.MoreVert,
                     OnSelectionChange = { i ->
                         if(i.id == 1) {
-                            OnCloseClicked(thisUnit)
+                            OnCloseClicked()
                         } else if(i.id == -1) {
                             OnAddClicked()
                         } else if(i.id == 2) {
