@@ -164,6 +164,7 @@ fun BiblePane(
                     val bookId = localizedBookList.first { it.text == selected }.id
                     viewModel.selectBook(bookId)
                 },
+                readOnly = true,
                 modifier = Modifier.weight(1f).padding(5.dp)
             )
 
