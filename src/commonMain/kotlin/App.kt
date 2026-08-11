@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import locale.L
 import locale.LanguagePreferences
+import platform.isMobilePlatform
 import phonetics.PhoneticLanguage
 import phonetics.PhoneticSettings
 import phonetics.rememberPhoneticSettings
@@ -119,6 +120,11 @@ private fun MainAppContent(
     }
     var nextPaneId by remember { mutableStateOf(panes.size) }
 
+    // Movable content per pane so that each pane keeps its internal state
+    // (scroll position, selections) when rotation switches the pane container
+    // between a Row and a Column.
+    val movablePaneContents = remember { mutableMapOf<Int, @Composable (Modifier) -> Unit>() }
+
     fun addPane(kind: PaneKind) {
         // New Bible panes start from the translations currently in use
         val bibleIds = if (kind == PaneKind.BIBLE) {
@@ -132,6 +138,7 @@ private fun MainAppContent(
 
     fun closePane(id: Int) {
         panes.removeAll { it.id == id }
+        movablePaneContents.remove(id)
         // Never leave the user with an empty window
         if (panes.isEmpty()) {
             addPane(PaneKind.BIBLE)
@@ -154,53 +161,73 @@ private fun MainAppContent(
             .collect { SessionPreferences.save(it) }
     }
 
+    fun paneContentFor(pane: PaneEntry): @Composable (Modifier) -> Unit =
+        movablePaneContents.getOrPut(pane.id) {
+            movableContentOf { modifier: Modifier ->
+                Column(
+                    modifier = modifier
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                        )
+                        .background(MaterialTheme.colorScheme.background)
+                ) {
+                    when (pane.kind) {
+                        PaneKind.BIBLE -> BiblePane(
+                            OnAddClicked = { addPane(PaneKind.BIBLE) },
+                            OnCloseClicked = { closePane(pane.id) },
+                            OnNewSearch = { addPane(PaneKind.SEARCH) },
+                            OnGlobalNotesClicked = { addPane(PaneKind.NOTES) },
+                            totalUnits = panes.size.toFloat(),
+                            initialBibleIds = pane.initialBibleIds,
+                            initialBookId = pane.initialBookId,
+                            initialChapterNum = pane.initialChapterNum,
+                            onSessionChanged = { bibleIds, bookId, chapterNum ->
+                                pane.bibleIds = bibleIds
+                                pane.bookId = bookId
+                                pane.chapterNum = chapterNum
+                            },
+                            themeState = themeState,
+                            phoneticSettings = phoneticSettings
+                        )
+
+                        PaneKind.SEARCH -> SearchPane(
+                            OnAddClicked = { addPane(PaneKind.SEARCH) },
+                            OnCloseClicked = { closePane(pane.id) },
+                            totalUnits = panes.size.toFloat(),
+                            initialSearchText = pane.initialSearchText,
+                            onSearchTextChanged = { pane.searchText = it }
+                        )
+
+                        PaneKind.NOTES -> GlobalNotesView(
+                            OnCloseClicked = { closePane(pane.id) },
+                            totalUnits = panes.size.toFloat(),
+                            initialSearchText = pane.initialSearchText,
+                            onSearchTextChanged = { pane.searchText = it }
+                        )
+                    }
+                }
+            }
+        }
+
     Column(modifier = Modifier.fillMaxSize()) {
-        // Main content
-        Row(modifier = Modifier.fillMaxSize().weight(1f)) {
-            panes.forEach { pane ->
-                key(pane.id) {
-                    Column(
-                        modifier = Modifier
-                            .border(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                            )
-                            .weight(1F)
-                            .background(MaterialTheme.colorScheme.background)
-                    ) {
-                        when (pane.kind) {
-                            PaneKind.BIBLE -> BiblePane(
-                                OnAddClicked = { addPane(PaneKind.BIBLE) },
-                                OnCloseClicked = { closePane(pane.id) },
-                                OnNewSearch = { addPane(PaneKind.SEARCH) },
-                                OnGlobalNotesClicked = { addPane(PaneKind.NOTES) },
-                                totalUnits = panes.size.toFloat(),
-                                initialBibleIds = pane.initialBibleIds,
-                                initialBookId = pane.initialBookId,
-                                initialChapterNum = pane.initialChapterNum,
-                                onSessionChanged = { bibleIds, bookId, chapterNum ->
-                                    pane.bibleIds = bibleIds
-                                    pane.bookId = bookId
-                                    pane.chapterNum = chapterNum
-                                },
-                                themeState = themeState,
-                                phoneticSettings = phoneticSettings
-                            )
-
-                            PaneKind.SEARCH -> SearchPane(
-                                OnAddClicked = { addPane(PaneKind.SEARCH) },
-                                OnCloseClicked = { closePane(pane.id) },
-                                totalUnits = panes.size.toFloat(),
-                                initialSearchText = pane.initialSearchText,
-                                onSearchTextChanged = { pane.searchText = it }
-                            )
-
-                            PaneKind.NOTES -> GlobalNotesView(
-                                OnCloseClicked = { closePane(pane.id) },
-                                totalUnits = panes.size.toFloat(),
-                                initialSearchText = pane.initialSearchText,
-                                onSearchTextChanged = { pane.searchText = it }
-                            )
+        // Main content: panes sit side by side, except on portrait mobile
+        // screens where they stack vertically.
+        BoxWithConstraints(modifier = Modifier.fillMaxSize().weight(1f)) {
+            val stackVertically = isMobilePlatform && maxHeight > maxWidth
+            if (stackVertically) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    panes.forEach { pane ->
+                        key(pane.id) {
+                            paneContentFor(pane)(Modifier.weight(1F))
+                        }
+                    }
+                }
+            } else {
+                Row(modifier = Modifier.fillMaxSize()) {
+                    panes.forEach { pane ->
+                        key(pane.id) {
+                            paneContentFor(pane)(Modifier.weight(1F))
                         }
                     }
                 }
